@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -390,7 +391,19 @@ export default function VerificationStep() {
             {selectedMethod === "phone" && (
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  By clicking Send Code, you agree to receive a one-time SMS from Inverse Collective LLC (Elder Voice) to verify your identity. Msg & data rates may apply. Reply STOP to cancel, HELP for help.
+                  By clicking Send Code, you agree to receive a one time SMS from Inverse Collective LLC to verify your identity. One message per request. Msg and data rates may apply. Reply STOP to cancel, HELP for help. By continuing you agree to our{" "}
+                  <Link href="/terms-of-service">
+                    <span className="text-blue-600 hover:text-blue-700 underline cursor-pointer">
+                      Terms
+                    </span>
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy-policy">
+                    <span className="text-blue-600 hover:text-blue-700 underline cursor-pointer">
+                      Privacy Policy
+                    </span>
+                  </Link>
+                  .
                 </p>
               </div>
             )}

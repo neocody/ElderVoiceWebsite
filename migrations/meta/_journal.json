@@ -22,6 +22,20 @@
       "when": 1759343293863,
       "tag": "0002_kind_quasimodo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759855582429,
+      "tag": "0003_curious_omega_sentinel",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1759855844756,
+      "tag": "0004_stiff_bloodstrike",
+      "breakpoints": true
     }
   ]
 }

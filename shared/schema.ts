@@ -621,13 +621,12 @@ export type SelectService = typeof services.$inferSelect;
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id")
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
 
   planId: integer("plan_id")
     .references(() => servicePlans.id)
     .notNull(),
-
   stripeCustomerId: varchar("stripe_customer_id").notNull(),
   stripeSubscriptionId: varchar("stripe_subscription_id").notNull().unique(),
   stripePriceId: varchar("stripe_price_id"), // track current price (monthly/annual)

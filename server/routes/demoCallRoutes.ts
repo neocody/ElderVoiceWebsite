@@ -2,12 +2,18 @@ import type { Express } from "express";
 import { z } from "zod";
 import { MailService } from '@sendgrid/mail';
 
-if (!process.env.SENDGRID_API_KEY) {
-  throw new Error("SENDGRID_API_KEY environment variable must be set");
-}
+let mailServiceInstance: MailService | null = null;
 
-const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY);
+function getMailService(): MailService {
+  if (!mailServiceInstance) {
+    if (!process.env.SENDGRID_API_KEY) {
+      throw new Error("SENDGRID_API_KEY environment variable must be set");
+    }
+    mailServiceInstance = new MailService();
+    mailServiceInstance.setApiKey(process.env.SENDGRID_API_KEY);
+  }
+  return mailServiceInstance;
+}
 
 // Validation schema for demo call requests
 const demoCallRequestSchema = z.object({
@@ -188,7 +194,7 @@ export function registerDemoCallRoutes(app: Express) {
       `;
 
       // Send email to admin
-      await mailService.send({
+      await getMailService().send({
         to: 'admin@eldercare-ai.com', // Admin notification email
         from: 'demo-requests@eldercare-ai.com', // Demo request notifications
         subject: `🔔 New Demo Call Request from ${data.name}`,
@@ -197,7 +203,7 @@ export function registerDemoCallRoutes(app: Express) {
       });
 
       // Send confirmation email to requester
-      await mailService.send({
+      await getMailService().send({
         to: data.email,
         from: 'welcome@eldercare-ai.com', // Welcome and confirmation emails
         subject: '✅ Demo Call Request Received - AI Companion',

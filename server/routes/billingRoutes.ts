@@ -7,13 +7,19 @@ import {
   withUserProfile,
 } from "../middleware/auth";
 
-if (!process.env.STRIPE_SECRET) {
-  throw new Error("Missing required Stripe secret: STRIPE_SECRET");
-}
+let stripeClient: Stripe | null = null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET, {
-  apiVersion: "2025-06-30.basil",
-});
+function getStripe(): Stripe {
+  if (!stripeClient) {
+    if (!process.env.STRIPE_SECRET) {
+      throw new Error("Missing required Stripe secret: STRIPE_SECRET");
+    }
+    stripeClient = new Stripe(process.env.STRIPE_SECRET, {
+      apiVersion: "2025-06-30.basil",
+    });
+  }
+  return stripeClient;
+}
 
 export function registerBillingRoutes(app: Express) {
   // Webhook for Stripe events
@@ -29,14 +35,14 @@ export function registerBillingRoutes(app: Express) {
 
       // Verify we have raw body data
       if (Buffer.isBuffer(req.body)) {
-        event = stripe.webhooks.constructEvent(
+        event = getStripe().webhooks.constructEvent(
           req.body,
           sig,
           process.env.STRIPE_WEBHOOK_SECRET,
         );
       } else if (typeof req.body === "string") {
         // Fallback for express.text() middleware
-        event = stripe.webhooks.constructEvent(
+        event = getStripe().webhooks.constructEvent(
           req.body,
           sig,
           process.env.STRIPE_WEBHOOK_SECRET,
@@ -132,7 +138,7 @@ export function registerBillingRoutes(app: Express) {
           // Create a new Stripe Customer for this user
           console.log(`Creating new Stripe customer for user: ${req.user!.id}`);
 
-          const stripeCustomer = await stripe.customers.create({
+          const stripeCustomer = await getStripe().customers.create({
             email: req.user?.profile?.email || undefined,
             name:
               req.user?.profile?.firstName && req.user?.profile?.lastName
@@ -159,7 +165,7 @@ export function registerBillingRoutes(app: Express) {
           );
         }
 
-        const session = await stripe.checkout.sessions.create(sessionParams);
+        const session = await getStripe().checkout.sessions.create(sessionParams);
 
         res.json({ url: session.url });
       } catch (error) {
@@ -209,7 +215,7 @@ export function registerBillingRoutes(app: Express) {
         let stripeCustomerId = userProfile.stripeCustomerId;
 
         if (!stripeCustomerId) {
-          const stripeCustomer = await stripe.customers.create({
+          const stripeCustomer = await getStripe().customers.create({
             email: userProfile.email || undefined,
             name:
               userProfile.firstName && userProfile.lastName
@@ -252,7 +258,7 @@ export function registerBillingRoutes(app: Express) {
           return_url: `${frontendURL}/getstarted?session_id={CHECKOUT_SESSION_ID}`,
         };
 
-        const session = await stripe.checkout.sessions.create(sessionParams);
+        const session = await getStripe().checkout.sessions.create(sessionParams);
 
         res.json({
           clientSecret: session.client_secret,
@@ -278,7 +284,7 @@ export function registerBillingRoutes(app: Express) {
       }
 
       // Retrieve the session from Stripe
-      const session = await stripe.checkout.sessions.retrieve(session_id, {
+      const session = await getStripe().checkout.sessions.retrieve(session_id, {
         expand: ["subscription", "customer"],
       });
 
@@ -381,14 +387,14 @@ export function registerBillingRoutes(app: Express) {
       // Create customer if provided
       let customerId;
       if (customer?.email) {
-        const stripeCustomer = await stripe.customers.create({
+        const stripeCustomer = await getStripe().customers.create({
           email: customer.email,
           phone: customer.phone,
         });
         customerId = stripeCustomer.id;
       }
 
-      const paymentIntent = await stripe.paymentIntents.create({
+      const paymentIntent = await getStripe().paymentIntents.create({
         amount: Math.round(amount), // Already in cents
         currency,
         description,
@@ -415,7 +421,7 @@ export function registerBillingRoutes(app: Express) {
     try {
       const { customerId, priceId, trialPeriodDays = 7 } = req.body;
 
-      const subscription = await stripe.subscriptions.create({
+      const subscription = await getStripe().subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
         trial_period_days: trialPeriodDays,

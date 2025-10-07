@@ -5,15 +5,18 @@ import type {
   InsertInvoice,
 } from "../../shared/schema";
 
-if (!process.env.STRIPE_SECRET) {
-  throw new Error("Missing required Stripe secret: STRIPE_SECRET");
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET, {
-  apiVersion: "2025-06-30.basil",
-});
-
 export class StripeSyncService {
+  private stripe: Stripe;
+
+  constructor() {
+    if (!process.env.STRIPE_SECRET) {
+      throw new Error("Missing required Stripe secret: STRIPE_SECRET");
+    }
+
+    this.stripe = new Stripe(process.env.STRIPE_SECRET, {
+      apiVersion: "2025-06-30.basil",
+    });
+  }
   /**
    * Creates a Stripe customer for a client
    */
@@ -23,7 +26,7 @@ export class StripeSyncService {
     billingPhone?: string | null;
   }): Promise<string> {
     try {
-      const customer = await stripe.customers.create({
+      const customer = await this.stripe.customers.create({
         name: client.name,
         email: client.billingEmail,
         phone: client.billingPhone || undefined,
@@ -54,7 +57,7 @@ export class StripeSyncService {
     metadata?: Record<string, string>;
   }): Promise<Stripe.Subscription> {
     try {
-      const subscription = await stripe.subscriptions.create({
+      const subscription = await this.stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
         trial_period_days: trialPeriodDays || 0,
@@ -81,7 +84,7 @@ export class StripeSyncService {
     },
   ): Promise<Stripe.Subscription> {
     try {
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+      const subscription = await this.stripe.subscriptions.retrieve(subscriptionId, {
         expand: ["items"],
       });
 
@@ -102,7 +105,7 @@ export class StripeSyncService {
         updateParams.metadata = updates.metadata;
       }
 
-      return await stripe.subscriptions.update(subscriptionId, updateParams);
+      return await this.stripe.subscriptions.update(subscriptionId, updateParams);
     } catch (error) {
       console.error(
         `Error updating Stripe subscription ${subscriptionId}:`,
@@ -120,7 +123,7 @@ export class StripeSyncService {
     atPeriodEnd: boolean = true,
   ): Promise<Stripe.Subscription> {
     try {
-      return await stripe.subscriptions.update(subscriptionId, {
+      return await this.stripe.subscriptions.update(subscriptionId, {
         cancel_at_period_end: atPeriodEnd,
       });
     } catch (error) {
@@ -141,7 +144,7 @@ export class StripeSyncService {
     annualPriceId?: string | null,
   ): Promise<void> {
     // Archive product
-    await stripe.products.update(productId, { active: false });
+    await this.stripe.products.update(productId, { active: false });
 
     // Archive prices (if provided)
     await this.archivePrices(monthlyPriceId ?? null, annualPriceId ?? null);
@@ -162,7 +165,7 @@ export class StripeSyncService {
     annualPriceId: string;
   }> {
     // Create Stripe Product
-    const stripeProduct = await stripe.products.create({
+    const stripeProduct = await this.stripe.products.create({
       name: planData.name,
       description: planData.description || "",
       metadata: {
@@ -181,7 +184,7 @@ export class StripeSyncService {
     );
 
     // Create Monthly Price
-    const monthlyPrice = await stripe.prices.create({
+    const monthlyPrice = await this.stripe.prices.create({
       product: stripeProduct.id,
       unit_amount: monthlyAmount,
       currency: "usd",
@@ -190,7 +193,7 @@ export class StripeSyncService {
     });
 
     // Create Annual Price
-    const annualPrice = await stripe.prices.create({
+    const annualPrice = await this.stripe.prices.create({
       product: stripeProduct.id,
       unit_amount: annualAmount,
       currency: "usd",
@@ -218,7 +221,7 @@ export class StripeSyncService {
   ): Promise<void> {
     if (Object.keys(updates).length === 0) return;
 
-    await stripe.products.update(productId, updates);
+    await this.stripe.products.update(productId, updates);
   }
 
   /**
@@ -238,7 +241,7 @@ export class StripeSyncService {
     );
 
     // Create new prices
-    const newMonthlyPrice = await stripe.prices.create({
+    const newMonthlyPrice = await this.stripe.prices.create({
       product: productId,
       unit_amount: monthlyAmount,
       currency: "usd",
@@ -246,7 +249,7 @@ export class StripeSyncService {
       metadata: { billingCycle: "monthly" },
     });
 
-    const newAnnualPrice = await stripe.prices.create({
+    const newAnnualPrice = await this.stripe.prices.create({
       product: productId,
       unit_amount: annualAmount,
       currency: "usd",
@@ -266,7 +269,7 @@ export class StripeSyncService {
   async archivePrices(...priceIds: (string | null)[]): Promise<void> {
     for (const priceId of priceIds) {
       if (priceId) {
-        await stripe.prices.update(priceId, { active: false });
+        await this.stripe.prices.update(priceId, { active: false });
       }
     }
   }
@@ -278,7 +281,7 @@ export class StripeSyncService {
     productId: string,
     metadata: Record<string, string>,
   ): Promise<void> {
-    await stripe.products.update(productId, { metadata });
+    await this.stripe.products.update(productId, { metadata });
   }
 
   /**
@@ -553,7 +556,7 @@ export class StripeSyncService {
       // Try to fetch the subscription from Stripe and create it locally
       try {
         const stripeSubscription =
-          await stripe.subscriptions.retrieve(stripeSubscriptionId);
+          await this.stripe.subscriptions.retrieve(stripeSubscriptionId);
         await this.handleSubscriptionCreated(stripeSubscription);
 
         // Now try to get the local subscription again
@@ -671,5 +674,24 @@ export class StripeSyncService {
   }
 }
 
-// Export singleton instance
-export const stripeSync = new StripeSyncService();
+// Lazy singleton initialization
+let stripeService: StripeSyncService | null = null;
+
+function getStripeSync(): StripeSyncService {
+  if (!stripeService) {
+    stripeService = new StripeSyncService();
+  }
+  return stripeService;
+}
+
+// Export with proxy to maintain API compatibility
+export const stripeSync = new Proxy({} as StripeSyncService, {
+  get(target, prop) {
+    const instance = getStripeSync();
+    const value = instance[prop as keyof StripeSyncService];
+    if (typeof value === 'function') {
+      return value.bind(instance);
+    }
+    return value;
+  }
+});

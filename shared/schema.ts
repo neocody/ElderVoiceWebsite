@@ -617,16 +617,53 @@ export const insertServiceSchema = createInsertSchema(services).omit({
 });
 export type InsertService = z.infer<typeof insertServiceSchema>;
 export type SelectService = typeof services.$inferSelect;
+
+// Coupon and Billing Tables
+export const coupons = pgTable("coupons", {
+  id: serial("id").primaryKey(),
+  stripeCouponId: varchar("stripe_coupon_id").notNull().unique(),
+  stripePromotionCodeId: varchar("stripe_promotion_code_id"),
+  code: varchar("code").notNull().unique(),
+  name: varchar("name"),
+  couponType: varchar("coupon_type", {
+    enum: ["percent", "amount"],
+  }).notNull(),
+  percentOff: integer("percent_off"),
+  amountOff: integer("amount_off"), // stored in cents when applicable
+  currency: varchar("currency"),
+  duration: varchar("duration", {
+    enum: ["forever", "once", "repeating"],
+  }).notNull(),
+  durationInMonths: integer("duration_in_months"),
+  maxRedemptions: integer("max_redemptions"),
+  redeemBy: timestamp("redeem_by"),
+  timesRedeemed: integer("times_redeemed").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCouponSchema = createInsertSchema(coupons).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  timesRedeemed: true,
+});
+export type InsertCoupon = z.infer<typeof insertCouponSchema>;
+export type Coupon = typeof coupons.$inferSelect;
+
 // Billing and Subscription Tables
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id")
-    .references(() => users.id, { onDelete: "cascade" })
+    .references(() => users.id)
     .notNull(),
 
   planId: integer("plan_id")
     .references(() => servicePlans.id)
     .notNull(),
+
   stripeCustomerId: varchar("stripe_customer_id").notNull(),
   stripeSubscriptionId: varchar("stripe_subscription_id").notNull().unique(),
   stripePriceId: varchar("stripe_price_id"), // track current price (monthly/annual)
@@ -654,6 +691,11 @@ export const subscriptions = pgTable("subscriptions", {
   canceledAt: timestamp("canceled_at"),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
   endedAt: timestamp("ended_at"), // when subscription fully ends
+  couponId: integer("coupon_id").references(() => coupons.id, {
+    onDelete: "set null",
+  }),
+  stripePromotionCodeId: varchar("stripe_promotion_code_id"),
+  couponAppliedAt: timestamp("coupon_applied_at"),
 
   metadata: jsonb("metadata"), // store extra info from Stripe if needed
   createdAt: timestamp("created_at").defaultNow(),

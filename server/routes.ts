@@ -15,6 +15,7 @@ import { registerEmailTemplateRoutes } from "./routes/emailTemplateRoutes";
 import { registerDemoCallRoutes } from "./routes/demoCallRoutes";
 import { registerAuthRoutes } from "./routes/authRoutes";
 import { registerOnboardRoutes } from "./routes/onboardRoutes";
+import { registerCouponRoutes } from "./routes/couponRoutes";
 import { initializeJobHandlers } from "./services/jobHandlers";
 
 //middleware for tracking request metrics
@@ -43,6 +44,7 @@ export async function registerRoutes(
   registerOnboardRoutes(app); // Onboarding endpoints for profile and preferences
   registerTwilioRoutes(app); // CRITICAL: Twilio voice communication - DO NOT MODIFY
   registerBillingRoutes(app); // Stripe billing and subscription management
+  registerCouponRoutes(app); // Coupon management
   registerCoreRoutes(app); // Core application functionality
   registerFileRoutes(app); // File upload and storage management
   registerJobRoutes(app); // Background job queue management

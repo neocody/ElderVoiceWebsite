@@ -40,6 +40,8 @@ import {
   type InsertClientUsage,
   type Invoice,
   type InsertInvoice,
+  type Coupon,
+  type InsertCoupon,
 } from "@shared/schema";
 
 // Interface for storage operations
@@ -233,6 +235,17 @@ export interface IStorage {
     updates: Partial<InsertService>,
   ): Promise<SelectService>;
   deleteService(id: number): Promise<void>;
+
+  // Coupon Operations
+  getCoupons(): Promise<Coupon[]>;
+  getCoupon(id: number): Promise<Coupon | undefined>;
+  getCouponByCode(code: string): Promise<Coupon | undefined>;
+  createCoupon(coupon: InsertCoupon): Promise<Coupon>;
+  updateCoupon(
+    id: number,
+    updates: Partial<InsertCoupon> & { timesRedeemed?: number },
+  ): Promise<Coupon>;
+  deleteCoupon(id: number): Promise<void>;
 
   // Team Member Operations
   getTeamMembers(): Promise<SelectTeamMember[]>;

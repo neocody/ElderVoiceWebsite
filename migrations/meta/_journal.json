@@ -36,6 +36,13 @@
       "when": 1759855844756,
       "tag": "0004_stiff_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1759862168303,
+      "tag": "0005_hot_mentor",
+      "breakpoints": true
     }
   ]
 }

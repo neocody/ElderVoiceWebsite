@@ -10,7 +10,9 @@ import { SystemSettingsStorage } from "./system-settings";
 import { ServiceStorage } from "./service";
 import { TeamMemberStorage } from "./team-member";
 import { ClientUsageStorage } from "./client-usage";
+import { CouponStorage } from "./coupon";
 import { IStorage } from "./interfaces/storage.interface";
+import type { InsertCoupon } from "@shared/schema";
 import { db } from "../db";
 
 export class DatabaseStorage implements IStorage {
@@ -26,6 +28,7 @@ export class DatabaseStorage implements IStorage {
   private serviceStorage: ServiceStorage;
   private teamMemberStorage: TeamMemberStorage;
   private clientUsageStorage: ClientUsageStorage;
+  private couponStorage: CouponStorage;
 
   constructor(private db: any) {
     this.userStorage = new UserStorage(db);
@@ -40,6 +43,7 @@ export class DatabaseStorage implements IStorage {
     this.serviceStorage = new ServiceStorage(db);
     this.teamMemberStorage = new TeamMemberStorage(db);
     this.clientUsageStorage = new ClientUsageStorage(db);
+    this.couponStorage = new CouponStorage(db);
   }
 
   // User operations - delegate to UserStorage
@@ -400,6 +404,34 @@ export class DatabaseStorage implements IStorage {
 
   async deleteService(id: number) {
     return this.serviceStorage.deleteService(id);
+  }
+
+  // Coupon operations - delegate to CouponStorage
+  async getCoupons() {
+    return this.couponStorage.getCoupons();
+  }
+
+  async getCoupon(id: number) {
+    return this.couponStorage.getCoupon(id);
+  }
+
+  async getCouponByCode(code: string) {
+    return this.couponStorage.getCouponByCode(code);
+  }
+
+  async createCoupon(coupon: InsertCoupon) {
+    return this.couponStorage.createCoupon(coupon);
+  }
+
+  async updateCoupon(
+    id: number,
+    updates: Partial<InsertCoupon> & { timesRedeemed?: number },
+  ) {
+    return this.couponStorage.updateCoupon(id, updates);
+  }
+
+  async deleteCoupon(id: number) {
+    return this.couponStorage.deleteCoupon(id);
   }
 
   // Subscription operations - delegate to SubscriptionStorage

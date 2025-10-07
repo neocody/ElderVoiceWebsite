@@ -15,6 +15,7 @@ import {
   Cog,
   Mail,
   Package,
+  Ticket,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -71,6 +72,7 @@ export default function Sidebar() {
   const adminManagementNavigation = [
     { name: "Team", href: "/admin/team", icon: UserCheck },
     { name: "Service Plans", href: "/admin/services", icon: Package },
+    { name: "Coupon Codes", href: "/admin/coupon", icon: Ticket },
     { name: "Revenue", href: "/admin/billing-admin", icon: DollarSign },
     { name: "Email Templates", href: "/admin/email-templates", icon: Mail },
     { name: "Alert Config", href: "/admin/alert-config", icon: Bell },

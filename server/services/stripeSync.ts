@@ -1,9 +1,6 @@
 import Stripe from "stripe";
 import { storage } from "../storage";
-import type {
-  InsertSubscription,
-  InsertInvoice,
-} from "../../shared/schema";
+import type { InsertSubscription, InsertInvoice } from "../../shared/schema";
 
 if (!process.env.STRIPE_SECRET) {
   throw new Error("Missing required Stripe secret: STRIPE_SECRET");
@@ -279,6 +276,194 @@ export class StripeSyncService {
     metadata: Record<string, string>,
   ): Promise<void> {
     await stripe.products.update(productId, { metadata });
+  }
+
+  /**
+   * Creates a coupon and promotion code in Stripe
+   */
+  async createCouponAndPromotionCode({
+    code,
+    name,
+    couponType,
+    percentOff,
+    amountOff,
+    currency,
+    duration,
+    durationInMonths,
+    maxRedemptions,
+    redeemBy,
+    metadata,
+    active = true,
+  }: {
+    code: string;
+    name?: string | null;
+    couponType: "percent" | "amount";
+    percentOff?: number | null;
+    amountOff?: number | null;
+    currency?: string | null;
+    duration: "forever" | "once" | "repeating";
+    durationInMonths?: number | null;
+    maxRedemptions?: number | null;
+    redeemBy?: Date | null;
+    metadata?: Record<string, string> | null;
+    active?: boolean;
+  }): Promise<{ coupon: Stripe.Coupon; promotionCode: Stripe.PromotionCode }> {
+    const couponParams: Stripe.CouponCreateParams = {
+      duration,
+    };
+
+    if (name) {
+      couponParams.name = name;
+    }
+
+    if (metadata) {
+      couponParams.metadata = metadata;
+    }
+
+    if (couponType === "percent") {
+      if (!percentOff) {
+        throw new Error("percentOff is required for percent coupons");
+      }
+      couponParams.percent_off = percentOff;
+    } else {
+      if (!amountOff) {
+        throw new Error("amountOff is required for amount coupons");
+      }
+      if (!currency) {
+        throw new Error("currency is required for amount coupons");
+      }
+      couponParams.amount_off = amountOff;
+      couponParams.currency = currency.toLowerCase();
+    }
+
+    if (duration === "repeating") {
+      if (!durationInMonths) {
+        throw new Error(
+          "durationInMonths is required for repeating duration coupons",
+        );
+      }
+      couponParams.duration_in_months = durationInMonths;
+    }
+
+    if (maxRedemptions != null) {
+      couponParams.max_redemptions = maxRedemptions;
+    }
+
+    if (redeemBy) {
+      couponParams.redeem_by = Math.floor(redeemBy.getTime() / 1000);
+    }
+
+    const coupon = await stripe.coupons.create(couponParams);
+
+    const promotionParams: Stripe.PromotionCodeCreateParams = {
+      coupon: coupon.id,
+      code,
+      active,
+    };
+
+    if (maxRedemptions != null) {
+      promotionParams.max_redemptions = maxRedemptions;
+    }
+
+    if (redeemBy) {
+      promotionParams.expires_at = Math.floor(redeemBy.getTime() / 1000);
+    }
+
+    if (metadata) {
+      promotionParams.metadata = metadata;
+    }
+
+    const promotionCode = await stripe.promotionCodes.create(promotionParams);
+
+    return { coupon, promotionCode };
+  }
+
+  /**
+   * Updates a Stripe coupon's mutable fields
+   */
+  async updateCoupon(
+    stripeCouponId: string,
+    updates: {
+      name?: string | null;
+      metadata?: Record<string, string> | null;
+    },
+  ): Promise<Stripe.Coupon> {
+    const params: Stripe.CouponUpdateParams = {};
+
+    if (updates.name !== undefined) {
+      params.name = updates.name ?? undefined;
+    }
+
+    if (updates.metadata !== undefined) {
+      params.metadata = updates.metadata ?? {};
+    }
+
+    if (Object.keys(params).length === 0) {
+      return await stripe.coupons.retrieve(stripeCouponId);
+    }
+
+    return await stripe.coupons.update(stripeCouponId, params);
+  }
+
+  /**
+   * Updates a Stripe promotion code
+   */
+  async updatePromotionCode(
+    stripePromotionCodeId: string,
+    updates: {
+      active?: boolean;
+      metadata?: Record<string, string> | null;
+    },
+  ): Promise<Stripe.PromotionCode> {
+    const params: Stripe.PromotionCodeUpdateParams = {};
+
+    if (updates.active !== undefined) {
+      params.active = updates.active;
+    }
+
+    if (updates.metadata !== undefined) {
+      params.metadata = updates.metadata ?? {};
+    }
+
+    if (Object.keys(params).length === 0) {
+      return await stripe.promotionCodes.retrieve(stripePromotionCodeId);
+    }
+
+    return await stripe.promotionCodes.update(stripePromotionCodeId, params);
+  }
+
+  async deactivatePromotionCode(stripePromotionCodeId: string): Promise<void> {
+    await stripe.promotionCodes.update(stripePromotionCodeId, {
+      active: false,
+    });
+  }
+
+  async deleteCoupon(stripeCouponId: string): Promise<void> {
+    await stripe.coupons.del(stripeCouponId);
+  }
+
+  async retrieveCoupon(stripeCouponId: string): Promise<Stripe.Coupon | null> {
+    try {
+      return await stripe.coupons.retrieve(stripeCouponId);
+    } catch (error: any) {
+      if (error?.statusCode === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async retrievePromotionCode(
+    stripePromotionCodeId: string,
+  ): Promise<Stripe.PromotionCode | null> {
+    try {
+      return await stripe.promotionCodes.retrieve(stripePromotionCodeId);
+    } catch (error: any) {
+      if (error?.statusCode === 404) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   /**

@@ -33,6 +33,7 @@ import EmailTemplates from "@/pages/EmailTemplates";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import PatientOnboarding from "@/pages/PatientOnboarding";
+import Coupon from "@/pages/Coupon";
 
 import SignIn from "@/pages/SignIn";
 import Signup from "@/pages/Signup";
@@ -172,6 +173,10 @@ function Router() {
       <Route
         path="/admin/clients"
         component={() => <AdminRoute component={Clients} />}
+      />
+      <Route
+        path="/admin/coupon"
+        component={() => <AdminRoute component={Coupon} />}
       />
       <Route
         path="/admin/services"
@@ -361,14 +366,14 @@ function App() {
     window.Tawk_LoadStart = new Date();
 
     // Create and load the Tawk.to script
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.async = true;
-    script.src = 'https://embed.tawk.to/68dc2e7e311aad1952563515/1j6e1b7th';
-    script.charset = 'UTF-8';
-    script.setAttribute('crossorigin', '*');
+    script.src = "https://embed.tawk.to/68dc2e7e311aad1952563515/1j6e1b7th";
+    script.charset = "UTF-8";
+    script.setAttribute("crossorigin", "*");
 
     // Insert the script into the document
-    const firstScript = document.getElementsByTagName('script')[0];
+    const firstScript = document.getElementsByTagName("script")[0];
     if (firstScript && firstScript.parentNode) {
       firstScript.parentNode.insertBefore(script, firstScript);
     }

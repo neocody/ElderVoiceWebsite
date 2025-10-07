@@ -76,7 +76,10 @@ export default function TermsOfService() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Consent to Automated Calls, SMS, and Call Recording</h2>
             <p className="text-gray-700 mb-4">
-              By providing a phone number and scheduling calls or reminders, you <strong>expressly consent</strong> (for yourself and represent you have authority for the senior) to receive <strong>automated and AI‑generated calls and SMS</strong> from us at the provided number(s). Message and data rates may apply. You may opt out of SMS at any time by replying <strong>STOP</strong>; reply <strong>HELP</strong> for help. We send <strong>service‑related texts only</strong> (no promotional SMS).
+              By providing a phone number and scheduling calls or reminders, you <strong>expressly consent</strong> (for yourself and represent you have authority for the senior) to receive <strong>automated and AI‑generated calls and SMS</strong> from <strong>Inverse Collective LLC</strong> at the provided number(s). 
+            </p>
+            <p className="text-gray-700 mb-4">
+              <strong>SMS Communications.</strong> We send SMS for one‑time verification codes (OTP) to verify your identity (one message per request) and for account notifications and service‑related communications. Message and data rates may apply. To opt out of SMS messages, reply <strong>STOP</strong> to any message; for help, reply <strong>HELP</strong>. You may also contact us at <a href="mailto:hello@inversecollective.com" className="text-blue-600 hover:text-blue-800">hello@inversecollective.com</a> or by mail at our address below.
             </p>
             <p className="text-gray-700 mb-4">
               <strong>Call Recording/Transcription.</strong> Calls are recorded and transcribed <strong>to allow the AI to learn about the person and improve conversations over time</strong>. <strong>Transcripts and recordings are not viewable by anyone (including customers and Inverse Collective personnel)</strong>, except as may be strictly required by law. We maintain consent logs and comply with applicable one‑party/two‑party consent laws.

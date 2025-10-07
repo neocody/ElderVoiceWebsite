@@ -100,7 +100,12 @@ export default function PrivacyPolicy() {
             </p>
             
             <p className="text-gray-700 mb-4">
-              <strong>SMS Opt‑Out.</strong> Reply <strong>STOP</strong> to opt out of SMS; <strong>HELP</strong> for help.
+              <strong>SMS Opt‑Out.</strong> <strong>Inverse Collective LLC</strong> sends SMS for one‑time verification codes (OTP) to verify your identity (one message per request) and for account notifications and service‑related communications. Message and data rates may apply. To opt out of SMS messages, reply <strong>STOP</strong> to any message; for help, reply <strong>HELP</strong>. You may also contact us at <a href="mailto:hello@inversecollective.com" className="text-blue-600 hover:text-blue-800">hello@inversecollective.com</a> or by mail at:
+            </p>
+            <p className="text-gray-700 mb-4 ml-6">
+              <strong>Inverse Collective LLC</strong><br />
+              5900 Balcones Drive, Suite 16274<br />
+              Austin, TX 78731
             </p>
             
             <p className="text-gray-700 mb-4">

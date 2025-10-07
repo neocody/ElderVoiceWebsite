@@ -1,0 +1,84 @@
+Prompt:
+Redesign the “Sign in to your account” page for Elder Voice to feel warmer, more premium, and more accessible—optimized for caregivers and facilities. Use React + Tailwind. Keep it fast and uncluttered.
+
+Layout
+
+Two-column on desktop, single-column on mobile/tablet.
+
+Left panel (brand/benefits): Soft vertical gradient using #2962EB → #4E48E6, subtle pattern. Small logo, headline “A calmer way to check in,” 3 bullet benefits (Companionship, Simple scheduling, Private & secure). Optional grayscale photo or illustration of a friendly senior on a call (no overlays).
+
+Right panel (auth): Centered card with rounded-2xl, soft shadow, 24px padding min.
+
+Auth Card
+
+Title: “Sign in to your account”
+
+Inputs: Email + Password with visible labels, helpful placeholders, and a Show/Hide password toggle.
+
+“Remember me” checkbox; “Forgot your password?” link.
+
+Primary button: “Sign in” (full-width). Disabled + spinner state while submitting.
+
+Divider “or continue with” then a Sign in with Google button styled as an outline pill; include Google icon.
+
+Small text under card: “Don’t have an account? Sign up” (link).
+
+Inline error handling: red border, concise helper text under the field, and an alert banner at top on generic errors.
+
+Header/Footer
+
+On this page, simplify header to only logo (hide top nav, remove duplicate “Sign In” button).
+
+Footer with tiny links: Privacy, Terms, Support.
+
+Accessibility & UX
+
+Minimum 16px body text; buttons ≥44px tall; clear focus states.
+
+High contrast; ensure WCAG AA for text on gradients.
+
+Keyboard-navigable; ARIA labels for inputs and error messages.
+
+Pressing Enter submits; keep the user on the page and show validation if fields are empty/invalid.
+
+Microcopy
+
+Friendly, concise tone.
+
+Beneath the password field, a tiny note: “We never share your email.”
+
+Optional tooltip icon near the footer: “Calls may be recorded to improve conversations. Transcripts aren’t viewable by staff.”
+
+Visual Details
+
+Colors: primary #2962EB, accent #4E48E6, neutrals in cool gray range.
+
+Rounded corners (lg–2xl), soft shadows, plenty of white space.
+
+Icons: outline style, minimal.
+
+Empty/Error States
+
+Show a generic “Incorrect email or password” banner on 401.
+
+Rate-limit friendly copy if too many attempts.
+
+Success/Loading
+
+On submit: disable button + spinner + “Signing you in…” text.
+
+After success: fade/slide transition to dashboard.
+
+Deliverables
+
+A responsive React component with Tailwind classes.
+
+Separate <AuthHeader />, <AuthCard />, and <BrandPanel /> subcomponents.
+
+Example states: default, field error, loading, and mobile layout.
+
+Nice-to-haves (if quick)
+
+Support for future SSO buttons (Apple/Microsoft) behind a config flag.
+
+Basic unit tests for validation and disabled states.

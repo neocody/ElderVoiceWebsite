@@ -1,0 +1,244 @@
+🔧 System Overview
+
+You are creating an admin-manageable system where:
+
+A Client = the person who signs up and pays (can be an individual, loved one, or facility)
+
+A Service = the subscription that actually makes calls to a specific patient
+
+A Patient = the person receiving the calls (not always the client)
+
+AI memory, patient call history, preferences, and configuration are tied to the Service
+
+Billing details are tied to the Client
+
+A Service can be reassigned to a different Client if needed (without losing history)
+
+📁 Data Model & Relationships
+1. Client (aka Account Owner)
+
+Represents the user who created the account
+
+Stores:
+
+client_id
+
+name
+
+email
+
+phone
+
+address
+
+signup_date
+
+account_type: individual, loved_one, facility
+
+stripe_customer_id
+
+payment_method
+
+billing_status
+
+Can exist without any active services
+
+May have multiple services (e.g. a parent subscribing for multiple parents or grandparents)
+
+Must be able to:
+
+Log in via email verification code (with option to add password later)
+
+View/manage billing
+
+Transfer services to others
+
+2. Service (aka Active Voice Line)
+
+Represents an active voice service for a specific patient
+
+Tied to:
+
+One client_id (for billing/ownership)
+
+One patient_id (who receives the call)
+
+Stores:
+
+service_id
+
+call_frequency (daily, M/W/F, etc.)
+
+call_time_window
+
+voice_id (which voice the user selected)
+
+subscription_id (Stripe)
+
+status: active, paused, cancelled
+
+created_at, next_call_at
+
+All AI contextual memory, preferences, call history, notes, etc.
+
+Services can be:
+
+Paused
+
+Cancelled
+
+Reassigned to a different client_id (billing) while retaining same patient_id and history
+
+Services are the core object that the system runs on — the AI engine reads from the service context and patient metadata before every call
+
+3. Patient (Recipient of Calls)
+
+Represents the person receiving the AI calls
+
+Stores:
+
+patient_id
+
+first_name
+
+nickname
+
+date_of_birth
+
+timezone
+
+phone_number
+
+consent_given: true/false
+
+Not required to have login access
+
+One patient can have only one active service at a time
+
+May be referenced by multiple clients (e.g. spouse and daughter both subscribe at different times)
+
+4. Invoice / Billing
+
+Tied only to the Client
+
+Each invoice references one or more service_ids (even if only one is allowed now)
+
+Stores:
+
+invoice_id
+
+client_id
+
+date_created, amount, payment_status
+
+Linked subscription_id in Stripe
+
+Supports monthly and annual billing cycles
+
+Promo code support optional
+
+🧠 Contextual Memory / Call Logic
+
+Each Service holds its own contextual memory and call history
+
+Every AI call updates this record with:
+
+Notes from the conversation
+
+Sentiment/mood flags
+
+Missed call data
+
+The AI engine pulls the service_id → patient_id → preferences/memory → synthesizes call → logs results
+
+Memory is not stored on the Client; the Client may switch, but the context persists with the Service
+
+🔄 Transfer of Ownership
+
+A Service can be reassigned from one client_id to another without resetting:
+
+AI memory
+
+Patient details
+
+Service status or configuration
+
+This enables features like:
+
+Family handoffs
+
+Facility upgrades
+
+Gifted plans
+
+✅ Key Functional Requirements
+
+Admin Dashboard
+
+View all clients
+
+View all services and their patient metadata
+
+Search by name, email, phone
+
+Reassign a service to a different client
+
+Cancel or pause a subscription
+
+View Stripe billing details
+
+Signup Flow
+
+First step: “Who is this for?”
+
+Myself
+
+A loved one
+
+A care facility
+
+Depending on answer, different flows are triggered (see onboarding map)
+
+Stripe subscription is created
+
+After checkout, client is redirected to onboarding (create patient + configure service)
+
+Login
+
+Email-only login with verification code (like Slack, Linear, etc.)
+
+Optionally set password later in profile
+
+Voice Selection
+
+During onboarding or dashboard, allow user to pick a voice for their Service
+
+Save voice_id to Service
+
+🔐 Security/Access Rules
+
+Only the client who owns a service can manage it
+
+Admins can view and edit all
+
+Patient data should be PII-safe and stored securely
+
+Service memory should be append-only or version-controlled for integrity
+
+✅ Summary
+
+You are building a structured backend system where:
+
+Client = who pays
+
+Service = what is being paid for
+
+Patient = who receives the benefit
+
+Contextual memory = tied to service
+
+Billing = tied to client
+
+Services can be transferred across clients
+
+Ask for clarification on any part. Once this schema is approved, begin building models, CRUD endpoints, and admin views for Client, Service, and Patient — and ensure onboarding and Stripe logic adheres to this structure.

@@ -1,0 +1,97 @@
+Fields (keep to one screen)
+
+Required
+
+Facility name
+
+Facility type (Assisted Living, Memory Care, Skilled Nursing, Independent Living, CCRC, Other)
+
+City, State
+
+Primary contact name
+
+Work email
+
+What are you interested in? (multi-select)
+
+Companionship calls
+
+Wellness check-ins
+
+Reminders (appointments, events)
+
+Pilot for a small group
+
+Other
+
+Optional (inline “Add details”)
+7. Residents to include at start (1–25, 26–50, 51–100, 100+)
+8. Phone
+9. Notes (single line)
+
+Consent (tiny)
+
+Checkbox: “Okay to contact me about this inquiry.”
+
+Tiny line: “Please don’t include resident names or medical details.”
+
+Microcopy (paste-ready)
+
+Title: Facility inquiry
+
+Subtitle: Tell us a bit about your community. We’ll follow up with a custom quote.
+
+CTA primary: Send request
+
+Link: Add details (optional)
+
+Placeholders:
+
+Facility name: “Sunrise Meadows”
+
+City, State: “Austin, TX”
+
+Name: “Taylor Nguyen”
+
+Email: “tnguyen@sunrisemeadows.com
+”
+
+Notes: “Considering a 10-resident pilot.”
+
+Validation
+
+Required: facility name, type, city/state, contact name, email, interests, consent.
+
+Email must be non-free domain if you want tighter qual (optional).
+
+Prevent PHI in Notes (regex for names/phones + warning is fine).
+
+Thank-you state
+
+Headline: Thanks—we’ve got it.
+
+Body: We’ll reach out with pricing and next steps.
+
+Buttons: Schedule a demo (primary) · Back to site
+
+Dev brief (for Vibe)
+
+Single-step modal, fits one viewport on mobile.
+
+Multi-select “interests” as pills; at least one required.
+
+“Add details” reveals residents, phone, notes (progressive disclosure).
+
+Keyboard focus trap, aria-live for errors.
+
+Events: facility_form_opened, facility_form_submitted, clicked_add_details.
+
+Payload example:
+
+{
+  "facility": {"name":"Sunrise Meadows","type":"Assisted Living","city_state":"Austin, TX"},
+  "contact": {"name":"Taylor Nguyen","email":"tnguyen@sunrisemeadows.com","phone":""},
+  "interests": ["Companionship calls","Pilot for a small group"],
+  "details": {"residents_initial":"26–50","notes":""},
+  "consent": true
+}

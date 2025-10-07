@@ -1,0 +1,123 @@
+🔧 Prompt for Developer: ElderVoice Signup Flow (Individual Plan Only)
+
+Hey! I’d like to revamp the signup flow based on a new structure modeled after Meela.ai, but with improvements and our own voice. There’s only one pricing plan for now, so keep that in mind — no plan selector needed.
+
+🔑 Core Requirements:
+
+Only one public plan (e.g., 3-day free trial → $19.95/mo subscription, billed via Stripe)
+
+Signup flow must branch based on user type:
+
+“Myself”
+
+“A loved one”
+
+“Care Facility” (this one just leads to a contact form for now)
+
+✅ Signup Flow Overview
+🔹 STEP 1: “Who is ElderVoice for?”
+
+Buttons:
+
+"Myself"
+
+"A loved one"
+
+"Care Facility"
+
+🧠 “Care Facility” route can go to a standalone “Request a Demo” form — keep the rest of the flow for “Myself” and “Loved One” only.
+
+🔹 STEP 2: Verification
+
+Prompt for phone number (SMS verification) or email login (magic link) — use whichever is easier to implement
+
+Once verified, auto-login the user
+
+🔹 STEP 3: Collect Personal Info
+For “Myself” flow:
+
+Name
+
+ZIP Code (validate)
+
+Date of Birth (must be 18+)
+
+Checkbox: [ ] I accept the Terms of Service and Privacy Policy (link out)
+
+For “Loved One” flow:
+
+What should we call them? (nickname)
+
+ZIP Code (validate)
+
+Date of Birth (must be 18+)
+
+Relationship to them (optional)
+
+Same Terms/Privacy checkbox
+
+🔹 STEP 4: Personalization
+For “Myself”:
+
+Prompt: “Tell us a bit about yourself so ElderVoice can personalize your conversations”
+
+Free-text box with optional prompt examples (e.g., “I love gardening”, “My grandkids call me Gigi”)
+
+For “Loved One”:
+
+Same idea — free-text about the person being signed up
+
+🔹 STEP 5: Call Preferences
+
+Days of the week to receive calls (toggle or checkbox Mon–Sun)
+
+Preferred time of day (dropdown: Morning / Afternoon / Evening)
+
+🔹 STEP 6: Checkout (Stripe)
+
+3-day free trial, then $19.95/month
+
+Collect billing info via Stripe (can use prebuilt Checkout if easier)
+
+Show secure badge, recurring billing acknowledgment:
+
+“By clicking Subscribe, you agree to be billed monthly after your free trial. You may cancel anytime.”
+
+🔹 STEP 7: Post-Signup Success Page
+For “Myself”:
+
+“You’re all set! Your first call is scheduled for [date/time]”
+
+For “Loved One”:
+
+Display a message:
+
+“Your subscription is active, but we need to confirm consent from [name] before we begin calling.”
+
+Offer options for verification:
+
+Text message to the loved one
+
+Email
+
+Or a call from ElderVoice support (placeholder for now)
+
+📲 Notes & UX Reminders:
+
+Mobile-first responsive layout
+
+Validate all inputs (ZIP, DOB, email format, phone, etc.)
+
+Use clean, modern UI (you can use Tailwind, shadcn/ui, or any open-source component set)
+
+Use the current service plan logic — no need to build a plan selector
+
+Stripe integration must:
+
+Create a customer
+
+Apply 3-day trial
+
+Subscribe to correct plan
+
+Save Stripe customer_id, subscription_id, and payment method to the user record

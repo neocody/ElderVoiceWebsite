@@ -1,0 +1,268 @@
+TASK: Convert Order Modal → Full Page Onboarding at /getstarted (No Step 0)
+
+Goal
+Replace the current order-form pop-up with a fast, mobile-first onboarding flow at /getstarted. Keep the existing plan-select buttons elsewhere; they should deep-link to /getstarted?plan=starter|family etc. No tier picker on this page.
+
+Flow (V1, card-first)
+
+Step 1 — Create Account
+
+Step 2 — Start Free Trial (Stripe)
+
+Step 3 — Welcome
+
+Step 4 — Add Loved One (minimum)
+
+Step 5 — Who Gets Texts?
+
+Step 6 — Test & Finish
+
+(Optional drawer after finish: “Make calls feel like them” mini-profile — skippable)
+
+ROUTE & LAYOUT
+
+New route: /getstarted (public, not indexed).
+
+Desktop: centered container, max-width ~640px.
+
+Mobile: 1-column, sticky footer with primary CTA.
+
+Progress header with step labels (1–6). Allow back/forward within this flow only.
+
+STEP 1 — Create Your Account
+
+Fields (required)
+
+Full name
+
+Email
+
+Mobile (for alerts)
+
+Time zone (auto-detect; editable dropdown)
+
+Consent (checkbox, required)
+“I agree to the Terms & Privacy and consent to receive SMS about my ElderVoice account (alerts, reminders, support). Reply STOP to opt out.”
+
+Buttons
+
+Primary: Continue
+
+Secondary: “Already have an account? Sign in”
+
+Validation
+
+Name/email/phone required; inline errors.
+
+Format phone to E.164; show example.
+
+Copy (top)
+“No app needed for your parent. You can set up the first call in ~1 minute.”
+
+STEP 2 — Start Free Trial (Stripe)
+
+Plan
+
+Read plan from querystring; default to starter. (No plan chooser on this page.)
+
+Show summary badge: “Plan: {{Plan name}} • Includes {{patient_limit}} patient{{s}}”
+
+Text
+“14-day free trial. Then $14/mo per patient on {{Plan}}. Cancel anytime. We’ll remind you before your trial ends on {{trial_end_date}}.”
+
+Action
+
+Open Stripe Checkout (subscription; trial).
+
+On success: return to /getstarted?step=welcome&session_id=… and create an active trial in the app.
+
+On fail/cancel: stay on Step 2 with a friendly error.
+
+Error copy
+“We couldn’t start your trial with that card. Please try another.”
+
+STEP 3 — Welcome
+
+Header
+“You’re in. Let’s set up your loved one (≈1 minute).”
+
+Body
+
+Primary: Add a loved one now
+
+Secondary: Do this later (adds dashboard banner; no calls until a patient exists)
+
+STEP 4 — Add Loved One (Minimum to Run)
+
+Fields (required)
+
+Preferred name (how we address them)
+
+Phone (mobile or landline)
+
+Call window (8–10am • 9–11am • 10–12pm; default 9–11am)
+
+Consent (required)
+“I have permission for ElderVoice to call {{Preferred name}} with automated daily check-ins.”
+
+Plan usage hint
+“This loved one will be added to your {{Plan}} ({{used}}/{{limit}}).”
+
+Buttons
+
+Primary: Save & continue
+
+Secondary: Skip for now
+
+Limit handling
+If used == limit → show modal:
+“You’ve used all patient slots on {{Plan}}. Upgrade to add another.” [See plans]
+
+STEP 5 — Who Gets Texts?
+
+Default
+
+Sponsor pre-checked for Alerts and 6pm Summary.
+
+Add contact (optional, max 2 for V1)
+
+Name, Mobile
+
+Toggles: Alerts / 6pm Summary
+
+TCPA opt-in (automatic)
+When a contact is added, send:
+“{{Sponsor}} listed you for ElderVoice updates about {{Elder}}. Reply YES to confirm, HELP for help, STOP to stop.”
+Only contacts who reply YES receive messages.
+
+Buttons
+
+Primary: Continue
+
+Secondary: Skip for now
+
+Inline note
+“Contacts can be added anytime.”
+
+STEP 6 — Test & Finish
+
+Actions
+
+Call me now (places a test check-in to sponsor)
+
+Send sample alert (SMS to sponsor)
+
+Preview
+“Tonight’s 6pm summary will look like:
+‘ElderVoice: {{Elder}} — OK / Needed help (resolved at 3:14pm) / Didn’t answer (you were notified).’”
+
+Delivery failure banners
+
+“We couldn’t reach this number. [Fix number]”
+
+If SMS undeliverable, block finish until updated.
+
+Finish
+
+Primary: Looks good → Go to Dashboard
+
+OPTIONAL DRAWER AFTER FINISH — “Make Calls Feel Like Them” (Skippable)
+
+Address as: input (Mr./Mrs./Grandma Jean/first name)
+
+Tone: Friendly / Formal / Brief
+
+Language: English / Spanish / Other
+
+Hearing/Pace: Normal / Slow & clear / Louder & slower (Repeat options On/Off)
+
+Escalation if no answer twice: Sponsor only / All contacts / Try one more call later today
+
+Topics they enjoy: Family • Pets • Garden • Weather • Faith • Hobbies (free text)
+Buttons: Save • Skip
+
+Show a light nudge on Dashboard if skipped: “Add a little personality to {{Elder}}’s calls → 60s”
+
+SYSTEM BEHAVIOR (high level, non-technical)
+
+After Stripe success: mark trial active and attach chosen plan (with patient slots).
+
+Calls/SMS only run when a plan is active and at least one loved one exists.
+
+Contacts must reply YES before receiving any messages. Sponsor always receives alerts/summary.
+
+“Resolve” links are one-tap (no login).
+
+COPY (PASTE EXACTLY)
+
+Call script (elder):
+“Hi, this is ElderVoice with your daily check-in for {{Preferred name}}.
+Press 1 if you’re OK.
+Press 2 if you need help.
+Press 3 if you’d like a call later today.”
+
+Alert SMS (sponsor/contacts):
+“ElderVoice: {{Elder}} didn’t answer their check-in. Please check and tap to resolve: {{resolve_link}}”
+
+6pm summary SMS:
+“ElderVoice: {{Elder}} — {{OK / Needed help (resolved at {{time}}) / Didn’t answer (you were notified)}}.”
+
+Upgrade banner (limit reached):
+“You’ve used all patient slots on your plan. Upgrade to add another.” [See plans]
+
+Inactive plan banner:
+“Your plan isn’t active. Calls and texts are paused.” [Manage plan]
+
+ACCESSIBILITY & MOBILE
+
+Labels linked to inputs; error text announced to screen readers.
+
+44px touch targets; numeric keypad for phone fields.
+
+Works fully on 360px width.
+
+ANALYTICS (events to log)
+
+getstarted_step_viewed {step}
+
+signup_submitted / signup_failed
+
+checkout_started / checkout_completed
+
+patient_added
+
+contact_added / contact_optin_yes
+
+test_call_triggered / sample_alert_sent
+
+onboarding_finished
+
+DEPRECATE OLD MODAL
+
+Replace all “Start Trial” triggers to link to /getstarted?plan={{id}}.
+
+Remove/disable the legacy pop-up.
+
+If someone lands on old hash/route, redirect 301 → /getstarted.
+
+QA / ACCEPTANCE (must pass)
+
+Complete Steps 1→6 on mobile in <3 minutes.
+
+“Call me now” rings within 30s; “Sample alert” arrives.
+
+Contacts only receive messages after replying YES.
+
+Dashboard shows plan name, status, patients used/allowed.
+
+Attempting to add beyond plan limit shows upgrade prompt (no silent failure).
+
+If plan is inactive/past-due, dashboard banner blocks calls and points to “Manage plan.”
+
+TIMING
+
+Implement Steps 1–6 and redirect in one pass.
+
+Optional mini-profile drawer can ship as V1.1 if needed.
+
+Questions? If something’s unclear, choose the simplest path that preserves conversion speed and gets a first call working tomorrow.

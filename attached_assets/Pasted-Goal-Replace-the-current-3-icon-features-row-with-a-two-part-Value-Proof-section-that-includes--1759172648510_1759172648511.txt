@@ -1,0 +1,71 @@
+Goal: Replace the current 3-icon features row with a two-part “Value + Proof” section that includes a narrative block, a small audio demo, a human image, a testimonial, and three proof cards. Keep colors #2962EB/#4E48E6. No em dashes.
+
+Layout
+
+Value row (split layout)
+
+Left:
+
+Eyebrow: “A friendly call that fits their day”
+
+H2: “A real conversation that brightens the week”
+
+Short paragraph (2–3 lines).
+
+Checklist (3 items with check icons).
+
+AudioChip: small pill button “▶ Hear a 20-sec sample” with timecode; on play, show tiny waveform and pause. Keyboard + screen-reader accessible.
+
+Right: rounded image card (photo or illustration of a warm phone call). Soft shadow, gentle gradient background.
+
+Proof row
+
+Centered testimonial card with quote, name, relation, city.
+
+Three proof cards underneath (equal width on desktop, stacked on mobile):
+
+Replace numbers with your real data once ready. For now, use neutral claims or “From early families”.
+
+Microcopy (drop-in)
+
+Eyebrow: A friendly call that fits their day
+
+H2: A real conversation that brightens the week
+
+Body: Elder Voice calls on a schedule you choose and talks like a familiar friend. No apps to learn. Just pick a voice, set the times, and we take it from there.
+
+Checklist items:
+
+Natural, caring conversations
+
+Flexible schedule you control
+
+Private by design
+
+Audio chip label: ▶ Hear a 20-sec sample
+
+Testimonial (example placeholder):
+
+“It feels like Mom has a kind friend checking in. She looks forward to the calls and I worry less.”
+– Amy R., daughter
+
+Proof cards (non-numerical version until you have stats):
+
+People keep coming back
+Families tell us their loved ones enjoy the routine and stay engaged.
+
+Conversations that feel natural
+Most calls run long enough to feel real, not scripted.
+
+Rated kindly by families
+Early users describe their loved ones as more connected and upbeat.
+
+Component notes
+
+Use React + Tailwind. Section padding py-20. Split grid lg:grid-cols-2 gap-12.
+
+Image card: rounded-2xl, subtle gradient background from-[#EEF3FF] to-white.
+
+AudioChip props: src, label, duration, aria-label. Prevent multiple clips from playing at once. Preload metadata only.
+
+Add analytics events: section_audio_play, section_trial_click_after_audio.

@@ -1,0 +1,90 @@
+REVISION BRIEF — Services & Patients (simple, human version)
+Goal
+
+Make “Service plan” the container and “Patients” live inside it.
+
+You cannot have a patient without a service plan, and a service plan isn’t considered “active” until at least one patient is added (and the plan’s patient limit isn’t exceeded).
+
+Core Rules (business logic)
+
+A customer (sponsor/admin) buys/starts a service plan first.
+
+Each service plan includes an allowed number of patients (e.g., 1, 2, 3, etc.).
+
+Patients and all their info belong to a specific service plan.
+
+If the plan is inactive, paused, or past due, all related patient services are paused (no calls/texts).
+
+If the plan is at its patient limit, the app clearly asks the user to upgrade before adding more patients.
+
+UX Changes (what the user sees)
+
+On the client profile:
+
+Rename “Services” to “Plan” and show: Plan name, Status (Active/Trial/Paused), and a counter like “2 of 3 patients used.”
+
+“Upgrade plan” button if maxed out.
+
+Patients Section:
+
+“Add patient” works only if there’s room left in the plan.
+
+If full: show banner “You’ve used all slots on your plan. Upgrade to add more.” with an Upgrade button.
+
+Each patient clearly shows which plan they belong to.
+
+Flow (from sign-up to live)
+
+Sign up / Start Trial → user picks a plan (or default starter) and starts it.
+
+Add first patient (required to make the plan useful).
+
+If user tries to add more patients than the plan allows → show upgrade prompt.
+
+If billing fails or plan is paused → clearly display “Plan inactive—services paused” and point to billing.
+
+Copy to use (paste directly)
+
+Plan card: “Plan: Starter • Status: Active • Patients: 2 / 3 used.”
+
+Limit reached banner: “You’ve used all patient slots on your plan. Upgrade to add another patient.” [Upgrade plan]
+
+Inactive plan banner: “Your plan isn’t active. Calls and texts are paused.” [Manage plan]
+
+Add patient modal (footer note): “This patient will be added to your current plan.”
+
+Upgrade nudge (when adding beyond limit): “Your current plan includes {{limit}} patients. Upgrade to continue.”
+
+Admin Controls (simple)
+
+Ability to create/edit plans with a name, description, price, and patient allowance.
+
+Toggle a plan Active/Inactive for sale.
+
+See usage: number of patients used per client vs. allowance.
+
+Edge Cases (what to do)
+
+Plan canceled or past due: pause services for all linked patients; show a clear banner and a “Reactivate” path.
+
+Downgrading to fewer patient slots: if the customer has more patients than the new allowance, require them to remove or move patients before confirming the downgrade (show a list and a count).
+
+Deleting a patient: frees up a slot immediately.
+
+Trial plan ends: if not activated, pause services and show “Trial ended—activate to continue.”
+
+Success Checklist (acceptance)
+
+I cannot add a patient until a plan is started.
+
+When I add a patient, I can see the used/allowed counter update.
+
+When I hit the limit, I’m stopped with a friendly prompt to Upgrade—no confusing errors.
+
+If my plan is inactive, the product clearly says services are paused and shows me how to fix it.
+
+On the client profile, it’s always obvious which plan I’m on and how many patient slots remain.
+
+“Why we’re doing this” (one line for the team)
+
+We’re removing confusion and preventing “orphan” records by making plan → patients a clear, simple relationship that mirrors how we sell and support the product.

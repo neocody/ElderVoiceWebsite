@@ -1,0 +1,286 @@
+# WireFuseMedia LLC — Terms of Service (Draft)
+
+**Last Updated:** September 27, 2025
+
+These Terms of Service ("Terms") govern your access to and use of the services provided by **WireFuseMedia LLC d/b/a Elder Voice** ("WireFuseMedia," "Elder Voice," "we," "our," or "us"), including our AI phone‑based companion service for seniors and the associated caregiver/facility web portal (collectively, the "Service"). By creating an account, scheduling calls, or otherwise using the Service, you agree to these Terms.
+
+If you do not agree to these Terms, do not use the Service.
+
+---
+
+## 1. Who We Are & What We Do
+
+WireFuseMedia LLC operates **Elder Voice**, a conversational AI platform that places scheduled, automated voice calls to seniors to provide friendly conversation, wellbeing check‑ins, and optional reminders. Authorized caregivers and care facilities configure call schedules and preferences through a secure dashboard.
+
+> **No Medical Care. Not for Emergencies.** The Service is not medical, behavioral health, or emergency care, and does not provide diagnosis or treatment. **Do not rely on the Service for emergencies. Call 911 (or your local emergency number) in an emergency.**
+
+---
+
+## 2. Eligibility
+
+The Service is offered **only to customers in the United States**. You must be at least **18 years old** to create an account or purchase a subscription. Caregivers/facilities represent that they have authority to provide senior phone numbers and manage preferences.
+
+---
+
+## 3. Your Account
+
+You are responsible for the security of your account credentials and for all activity under your account. Keep your information accurate and up to date. We may offer multi‑factor authentication and other safeguards; you are responsible for enabling and maintaining them.
+
+---
+
+## 4. Subscriptions, Trials, and Billing
+
+We offer plans that **auto‑renew monthly or annually** (as selected) until canceled. You authorize us (and our payment processor, **Stripe**) to charge your payment method on each renewal at the then‑current rate.
+
+**Trials.** We may offer a **7‑day free trial**; charges begin at the end of the trial unless you cancel before it ends.
+
+**Cancellation & Refunds.** You may cancel at any time effective at the end of the current billing period. **No refunds are provided after renewal unless required by law.**
+
+**Taxes.** Fees are exclusive of applicable taxes, which you are responsible for paying.
+
+---
+
+## 5. Acceptable Use
+
+You agree not to misuse the Service, including by:
+
+* Attempting to access others’ data or our systems without authorization;
+* Interfering with call operations or platform security;
+* Using the Service to send unlawful, harassing, deceptive, or spam communications;
+* Attempting to re‑identify anonymized data; or
+* Violating applicable laws (e.g., TCPA, call‑recording consent laws, data protection laws).
+
+We may suspend or terminate access for violations.
+
+---
+
+## 6. Consent to Automated Calls, SMS, and Call Recording
+
+By providing a phone number and scheduling calls or reminders, you **expressly consent** (for yourself and represent you have authority for the senior) to receive **automated and AI‑generated calls and SMS** from us at the provided number(s). Message and data rates may apply. You may opt out of SMS at any time by replying **STOP**; reply **HELP** for help. We send **service‑related texts only** (no promotional SMS).
+
+**Call Recording/Transcription.** Calls are recorded and transcribed **to allow the AI to learn about the person and improve conversations over time**. **Transcripts and recordings are not viewable by anyone (including customers and WireFuseMedia personnel)**, except as may be strictly required by law. We maintain consent logs and comply with applicable one‑party/two‑party consent laws.
+
+---
+
+## 7. Caregiver & Facility Responsibilities
+
+Caregivers/facilities must:
+
+* Ensure accuracy of senior contact details and schedules;
+* Obtain and maintain appropriate consent from seniors or their legal representatives;
+* Use the Service in a manner consistent with applicable privacy, elder‑care, and telecommunications laws;
+* Understand that **call content and transcripts are not accessible**; rely on independent judgment and any allowed metadata.
+
+---
+
+## 8. Privacy
+
+Our **Privacy Policy** explains how we collect, use, and protect personal data and is incorporated into these Terms. By using the Service, you agree to our data practices as described in the Privacy Policy, including recording and 90‑day retention.
+
+---
+
+## 9. Intellectual Property; License
+
+We and our licensors own the Service and all related IP. Subject to these Terms, we grant you a limited, revocable, non‑transferable license to access and use the Service for your internal purposes (caregiving/facility operations). You will not reverse engineer, copy, or create derivative works of the Service.
+
+**Feedback.** If you submit feedback or suggestions, we may use them without restriction or compensation to you.
+
+---
+
+## 10. Third‑Party Services
+
+The Service integrates telephony, AI, and payment providers. Your use of those features may be subject to the third parties’ terms and privacy policies. We are not responsible for third‑party services, and availability may change without notice.
+
+---
+
+## 11. De‑Identified and Aggregated Data
+
+We may use **de‑identified and/or aggregated** data to operate, maintain, and improve the Service, develop new features, and for analytics and quality assurance. We will not attempt to re‑identify de‑identified data.
+
+---
+
+## 12. Service Changes; Availability; Service Level Target
+
+We may modify, suspend, or discontinue features at any time. We strive for high availability and target **99.5% monthly uptime** excluding scheduled maintenance, emergency maintenance, and third‑party outages. This is a **non‑binding target** and does not include service credits unless agreed in a separate written order form.
+
+---
+
+## 13. Disclaimers
+
+THE SERVICE IS PROVIDED **“AS IS”** AND **“AS AVAILABLE.”** TO THE MAXIMUM EXTENT PERMITTED BY LAW, WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON‑INFRINGEMENT. WE DO NOT WARRANT THAT CALLS WILL ALWAYS CONNECT OR THAT TRANSCRIPTS ARE ERROR‑FREE.
+
+---
+
+## 14. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, WIREFUSEMEDIA AND ITS AFFILIATES, OFFICERS, EMPLOYEES, AGENTS, AND PARTNERS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, DATA, OR GOODWILL, ARISING OUT OF OR RELATED TO YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY FOR ALL CLAIMS RELATING TO THE SERVICE IN ANY 12‑MONTH PERIOD SHALL NOT EXCEED THE AMOUNTS YOU PAID TO US FOR THE SERVICE IN THAT PERIOD.
+
+Some jurisdictions do not allow certain limitations; in those cases, the above limits apply to the fullest extent permitted.
+
+---
+
+## 15. Indemnification
+
+You will defend, indemnify, and hold harmless WireFuseMedia from and against any claims, liabilities, damages, losses, and expenses (including reasonable attorneys’ fees) arising out of or related to: (a) your use of the Service; (b) your violation of these Terms; (c) your violation of law; or (d) any communications you initiate through the Service (including telemarketing/TCPA issues) and any failure to obtain necessary consents.
+
+---
+
+## 16. Suspension and Termination
+
+We may suspend or terminate access for any violation of these Terms or where required by law. You may stop using the Service at any time. Upon termination, your right to use the Service ends, but sections that by their nature should survive (e.g., fees owed, IP, disclaimers, limitations, indemnities) will survive.
+
+---
+
+## 17. Governing Law; Dispute Resolution
+
+**Governing Law.** These Terms are governed by the laws of the **State of Texas**, without regard to conflicts of laws principles.
+
+**Arbitration; Class‑Action Waiver; Venue.** Any dispute, claim, or controversy arising out of or relating to the Service or these Terms will be resolved by **binding arbitration** administered by a recognized arbitration provider. You and WireFuseMedia agree to **waive any right to a jury trial** and to proceed on an **individual basis only**; **class actions and representative proceedings are not permitted**. Judgment on the award may be entered in the state or federal courts located in **Travis County, Texas**, which shall have exclusive jurisdiction for any court proceedings.
+
+---
+
+## 18. Changes to These Terms
+
+We may revise these Terms from time to time. If we make material changes, we will provide notice (e.g., via email or in‑product). Your continued use after changes become effective constitutes acceptance.
+
+---
+
+## 19. Contact
+
+**WireFuseMedia LLC d/b/a Elder Voice**
+5900 Balcones Drive, Suite 16274
+Austin, TX 78731
+Email: **[hello@eldervoice.com](mailto:hello@eldervoice.com)**
+
+---
+
+# WireFuseMedia LLC — Privacy Policy (Draft)
+
+**Last Updated:** September 27, 2025
+
+This Privacy Policy describes how **WireFuseMedia LLC d/b/a Elder Voice** ("WireFuseMedia," "Elder Voice," "we," "our," or "us") collects, uses, discloses, and protects personal information when you use our AI phone companion service and caregiver/facility dashboard (the "Service"). The Service is intended for customers in the **United States** only.
+
+By using the Service, you agree to this Privacy Policy and our Terms of Service.
+
+---
+
+## 1. Information We Collect
+
+**Account & Profile Data.** Name, email, role (family, caregiver, admin), organization, phone numbers for seniors and caregivers, preferences, schedules.
+
+**Call Data.** Call metadata (time, duration, outcome), **call recordings** and **transcripts** (not viewable by humans), and AI‑generated embeddings/signals for personalization.
+
+**Communications.** SMS reminders (service‑only), support requests, feedback.
+
+**Payment Data.** Billing contacts, plan details, and limited payment information via **Stripe** (we do not store full card numbers).
+
+**Technical Data.** Log files, device/browser data, IP addresses, cookies, and analytics events via **Google Analytics**.
+
+**Sensitive Data.** The Service is **not a medical or HIPAA service** and is not intended to collect protected health information (PHI). If you choose to input health‑related notes, we handle them with heightened safeguards; do not upload PHI.
+
+---
+
+## 2. How We Use Information
+
+* Provide, operate, and secure the Service (including scheduling, placing calls, transcribing, and personalization);
+* Send service messages (verifications, password resets, billing notices) and SMS reminders;
+* Monitor performance, debug, and prevent fraud/abuse;
+* Improve and develop features, including using **de‑identified/aggregated** data and model quality signals;
+* Comply with legal obligations and enforce our Terms.
+
+**No Selling / No Cross‑Context Behavioral Ads.** We **do not sell** personal information and do **not** use personal information for cross‑context behavioral advertising.
+
+---
+
+## 3. Sharing and Disclosure
+
+We share personal information with:
+
+* **Processors/Service Providers** acting on our behalf, including **Twilio** (telephony), **OpenAI** (AI processing), **Stripe** (payments), **SendGrid** (email), and **Google Analytics** (analytics), under contracts that limit use to our instructions;
+* **Legal/Compliance** recipients where required by law or to protect rights, safety, and security;
+* **Business Transfers** in connection with a merger, acquisition, or asset sale.
+
+We do not permit providers to use personal information for their own marketing.
+
+---
+
+## 4. Data Access & Visibility
+
+**No Human Access to Call Content.** Call recordings and transcripts are **not viewable by anyone**, including customers and WireFuseMedia personnel, except where disclosure is legally required. We apply technical and policy controls to enforce this.
+
+**Customer Access.** Customers may view limited **metadata** (e.g., call attempt, success/failure, schedule) but not transcript content.
+
+---
+
+## 5. Data Retention
+
+We retain personal information for as long as needed to provide the Service and for legitimate business purposes (e.g., accounting, security), then delete or de‑identify it. **Call recordings/transcripts** are retained for **90 days** by default, unless law or active disputes require longer retention.
+
+---
+
+## 6. Your Choices & Rights
+
+**Account Controls.** Update account details and settings in the dashboard.
+
+**SMS Opt‑Out.** Reply **STOP** to opt out of SMS; **HELP** for help.
+
+**Privacy Rights.** Where applicable under U.S. state privacy laws (e.g., California), you may request access, deletion, or correction. Submit requests to **[hello@eldervoice.com](mailto:hello@eldervoice.com)**. We will verify your identity before responding.
+
+---
+
+## 7. Security
+
+We use administrative, technical, and physical safeguards designed to protect personal information, including encryption in transit and at rest, access control, and monitoring. No system is 100% secure; please use strong, unique passwords and keep them confidential.
+
+---
+
+## 8. Cookies & Tracking
+
+We use cookies and similar technologies for authentication, preferences, and analytics via Google Analytics. You can control cookies through your browser settings. Some features may not function properly without certain cookies.
+
+---
+
+## 9. Children’s Privacy
+
+The Service is not directed to children under 13 and we do not knowingly collect personal information from them. If we learn we have collected such data, we will delete it.
+
+---
+
+## 10. International Users
+
+The Service is intended for use in the **United States** only. If you access the Service from outside the U.S., you consent to processing in the U.S. and understand that the Service may be unavailable or limited.
+
+---
+
+## 11. State‑Specific Disclosures (U.S.)
+
+We honor rights provided by applicable state privacy laws. We do not sell personal information. We do not share for cross‑context behavioral advertising. Authorized agent requests will be honored consistent with law.
+
+---
+
+## 12. Data Processing Addendum (DPA)
+
+For business customers needing a DPA, **contact us at [hello@eldervoice.com](mailto:hello@eldervoice.com)**. The DPA will describe roles (customer = controller; WireFuseMedia = processor), security measures, and subprocessors (Twilio, OpenAI, Stripe, SendGrid, Google Analytics). **We are not a HIPAA‑covered entity and do not offer BAAs** unless separately agreed in writing.
+
+---
+
+## 13. Changes to This Policy
+
+We may update this Privacy Policy periodically. We will notify you of material changes (e.g., by email or in‑product). Your continued use after changes become effective signifies your acceptance.
+
+---
+
+## 14. How to Contact Us
+
+Questions about privacy? Reach us at **[hello@eldervoice.com](mailto:hello@eldervoice.com)** or by mail at the address above.
+
+---
+
+# Annex A — Data Processing Addendum (Outline)
+
+* Parties & Roles (Controller/Processor)
+* Processing Details (subject matter, duration, nature, purpose)
+* Security Measures (encryption, access controls, logging, vulnerability management)
+* Subprocessors (Twilio, OpenAI, Stripe, SendGrid, Google Analytics)
+* U.S. State Law Addendum (CPRA‑style definitions & rights)
+* Audit & Assistance; Incident Notice; Deletion/Return at end of term

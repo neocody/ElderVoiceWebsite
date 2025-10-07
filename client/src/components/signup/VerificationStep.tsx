@@ -383,7 +383,7 @@ export default function VerificationStep() {
               />
               {selectedMethod === "phone" && (
                 <p className="text-sm text-gray-500 mt-1">
-                  Standard messaging rates may apply
+                  Standard messaging rates may apply. Sender, Inverse Collective LLC.
                 </p>
               )}
             </div>

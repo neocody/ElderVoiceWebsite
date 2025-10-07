@@ -862,4 +862,47 @@ export function registerTwilioRoutes(app: Express) {
       res.status(404).send("Audio file not found");
     }
   });
+
+  // SMS webhook endpoint for handling incoming SMS (HELP, STOP, etc.)
+  app.post("/api/twilio/sms", async (req, res) => {
+    try {
+      const { Body, From } = req.body;
+      const incomingMessage = Body?.trim().toUpperCase();
+      const senderNumber = From;
+
+      console.log(`[SMS] Incoming message from ${senderNumber}: ${Body}`);
+
+      // TwiML response
+      const MessagingResponse = require("twilio").twiml.MessagingResponse;
+      const twiml = new MessagingResponse();
+
+      // HELP keywords
+      const helpKeywords = ["HELP", "INFO"];
+      // STOP keywords (Twilio standard opt-out keywords)
+      const stopKeywords = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"];
+      // START keywords (Twilio standard opt-in keywords)
+      const startKeywords = ["START", "YES", "UNSTOP"];
+
+      if (helpKeywords.includes(incomingMessage)) {
+        twiml.message(
+          "Inverse Collective LLC support. For help reply HELP or email hello@inversecollective.com. Msg and data rates may apply."
+        );
+      } else if (stopKeywords.includes(incomingMessage)) {
+        twiml.message(
+          "You are opted out of Inverse Collective LLC messages. No more texts will be sent. For help email hello@inversecollective.com."
+        );
+      } else if (startKeywords.includes(incomingMessage)) {
+        twiml.message(
+          "You have been resubscribed to Inverse Collective LLC messages. Reply HELP for help or STOP to unsubscribe. Msg and data rates may apply."
+        );
+      }
+      // For any other message, send no response
+
+      res.type("text/xml");
+      res.send(twiml.toString());
+    } catch (error) {
+      console.error("[SMS] Error processing incoming SMS:", error);
+      res.status(500).send("Error processing SMS");
+    }
+  });
 }

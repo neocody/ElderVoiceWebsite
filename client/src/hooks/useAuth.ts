@@ -10,10 +10,12 @@ interface AuthSession {
 }
 
 export function useAuth() {
+  console.log("useAuth: Hook initialized");
   const queryClient = useQueryClient();
   const [session, setSession] = useState<AuthSession | null>(() => {
     // Load session from localStorage on init
     const savedSession = localStorage.getItem("supabase-session");
+    console.log("useAuth: Initial session from localStorage:", savedSession ? "found" : "not found");
     return savedSession ? JSON.parse(savedSession) : null;
   });
 
@@ -68,33 +70,25 @@ export function useAuth() {
     retry: false,
   });
 
-  // Listen to Supabase auth state changes
+  // Listen to Supabase auth state changes (but don't interfere with our custom session management)
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, supabaseSession) => {
-      if (event === "SIGNED_IN" && supabaseSession) {
-        setSession({
-          access_token: supabaseSession.access_token,
-          refresh_token: supabaseSession.refresh_token,
-          expires_at: supabaseSession.expires_at || 0,
-        });
-      } else if (event === "SIGNED_OUT") {
+      console.log("useAuth: Supabase auth state change:", event, supabaseSession ? "session present" : "no session");
+      
+      // Only handle Supabase events if we don't have our own session
+      // This prevents Supabase from clearing our custom session
+      if (event === "SIGNED_OUT" && !session) {
+        console.log("useAuth: SIGNED_OUT event, clearing session (only if no custom session)");
         setSession(null);
         queryClient.clear();
-      } else if (event === "TOKEN_REFRESHED" && supabaseSession) {
-        setSession({
-          access_token: supabaseSession.access_token,
-          refresh_token: supabaseSession.refresh_token,
-          expires_at: supabaseSession.expires_at || 0,
-        });
-        // Invalidate user query to refetch with new token
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       }
+      // Don't handle SIGNED_IN or TOKEN_REFRESHED since we manage our own session
     });
 
     return () => subscription.unsubscribe();
-  }, [queryClient]);
+  }, [queryClient, session]);
 
   // Login mutation
   const login = useMutation({
@@ -105,6 +99,7 @@ export function useAuth() {
       email: string;
       password: string;
     }) => {
+      console.log("useAuth: Login request started:", { email, password });
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
@@ -112,31 +107,42 @@ export function useAuth() {
         },
         body: JSON.stringify({ email, password }),
       });
+      console.log("useAuth: Login response received:", response.status, response.statusText);
 
       if (!response.ok) {
         const error = await response.json();
+        console.error("useAuth: Login failed with error:", error);
         throw new Error(error.message || "Login failed");
       }
 
       const data = await response.json();
+      console.log("useAuth: Login data received:", data);
 
       // Set session from login response
       if (data.session) {
+        console.log("useAuth: Setting session from response");
         setSession({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
           expires_at: data.session.expires_at || 0,
         });
 
-        // Also set the session in Supabase client
-        await supabase.auth.setSession(data.session);
+        // Don't set Supabase session directly since backend uses service role key
+        // The frontend will use our custom session management
+        console.log("useAuth: Session set successfully (skipping Supabase session)");
+      } else {
+        console.warn("useAuth: No session in login response");
       }
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("useAuth: Login mutation successful, invalidating queries");
       // Invalidate and refetch user data
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error) => {
+      console.error("useAuth: Login mutation failed:", error);
     },
   });
 
@@ -167,30 +173,50 @@ export function useAuth() {
   });
 
   const logout = async () => {
+    console.log("useAuth: Logout function called!");
     try {
-      // Sign out from Supabase
-      await supabase.auth.signOut();
-
-      // Also call backend logout endpoint
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-      });
-
-      // Clear local state
+      console.log("useAuth: Starting logout process");
+      
+      // Clear local state first to prevent race conditions
       setSession(null);
       localStorage.removeItem("supabase-session");
-
+      
       // Clear all cached data
       queryClient.clear();
-
+      
+      // Call backend logout endpoint if we have a session token
+      if (session?.access_token) {
+        try {
+          console.log("useAuth: Calling backend logout endpoint");
+          await fetch("/api/auth/logout", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+          console.log("useAuth: Backend logout successful");
+        } catch (error) {
+          console.error("useAuth: Backend logout failed:", error);
+        }
+      } else {
+        console.log("useAuth: No session token, skipping backend logout");
+      }
+      
+      // Sign out from Supabase client - this should clear the Supabase session
+      console.log("useAuth: Calling Supabase signOut");
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("useAuth: Supabase logout error:", error);
+      } else {
+        console.log("useAuth: Supabase logout successful");
+      }
+      
       // Force a hard redirect to the marketing website
+      console.log("useAuth: Redirecting to home page");
       window.location.replace("/");
     } catch (error) {
-      console.error("Logout failed:", error);
-      // Even if logout fails, clear local state and redirect
+      console.error("useAuth: Logout failed:", error);
+      // Even if logout fails, ensure local state is cleared
       setSession(null);
       localStorage.removeItem("supabase-session");
       queryClient.clear();
@@ -291,7 +317,7 @@ export function useAuth() {
     },
   });
 
-  return {
+  const authState = {
     user,
     session,
     isLoading: (isLoading && !error) || login.isPending || isSubscribed.isPending,
@@ -305,4 +331,14 @@ export function useAuth() {
     isSubscribed,
     error,
   };
+
+  console.log("useAuth: Returning auth state:", {
+    user: user?.id,
+    session: session ? "present" : "null",
+    isLoading: authState.isLoading,
+    isAuthenticated: authState.isAuthenticated,
+    error: error?.message
+  });
+
+  return authState;
 }

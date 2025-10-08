@@ -27,7 +27,7 @@ export default function PersonalInfoStep() {
     dateOfBirth: data.personalInfo.dateOfBirth || "",
     nickname: data.personalInfo.nickname || "",
     relationship: data.personalInfo.relationship || "",
-    phone: data.personalInfo.phone || "",
+    phone: "", // Initialize as empty, don't load from previous data
     acceptTerms: data.personalInfo.acceptTerms || false,
   });
 
@@ -46,21 +46,6 @@ export default function PersonalInfoStep() {
       setZipCodeValid(true); // Reset validation for partial input
     }
   }, [formData.zipCode]);
-
-  useEffect(() => {
-    if (data.personalInfo.phone) {
-      setFormData((prev) => {
-        if (prev.phone) return prev;
-        const digits = (data.personalInfo.phone ?? "").replace(/\D/g, "");
-        return {
-          ...prev,
-          phone: digits
-            ? formatPhoneInput(digits)
-            : data.personalInfo.phone || "",
-        };
-      });
-    }
-  }, [data.personalInfo.phone]);
 
   const validateZipCode = (zip: string) => {
     // US ZIP code validation: 5 digits, optionally followed by dash and 4 more digits
@@ -95,7 +80,10 @@ export default function PersonalInfoStep() {
     }
     if (digits.length <= 3) return digits;
     if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(
+      6,
+      10
+    )}`;
   };
 
   const normalizePhoneNumber = (value: string) => {
@@ -124,7 +112,7 @@ export default function PersonalInfoStep() {
       errors.push(
         isLovedOneFlow
           ? "Please enter their first name"
-          : "Please enter your first name",
+          : "Please enter your first name"
       );
     }
 
@@ -132,7 +120,7 @@ export default function PersonalInfoStep() {
       errors.push(
         isLovedOneFlow
           ? "Please enter their last name"
-          : "Please enter your last name",
+          : "Please enter your last name"
       );
     }
 
@@ -159,13 +147,13 @@ export default function PersonalInfoStep() {
       errors.push("Please enter a valid US ZIP code");
     }
 
-    const phoneSource = formData.phone || data.personalInfo.phone || "";
+    const phoneSource = formData.phone || "";
     const phoneDigits = phoneSource.replace(/\D/g, "");
     if (phoneDigits.length !== 10) {
       errors.push(
         isLovedOneFlow
           ? "Please enter a valid phone number for your loved one"
-          : "Please enter a valid phone number",
+          : "Please enter a valid phone number"
       );
     }
 
@@ -197,7 +185,7 @@ export default function PersonalInfoStep() {
     const trimmedZip = formData.zipCode.trim();
     const preferredName =
       (formData.nickname || formData.firstName).trim() || undefined;
-    const normalizedPhone = normalizePhoneNumber(phoneSource);
+    const normalizedPhone = normalizePhoneNumber(formData.phone);
     const formattedPhoneForContext = phoneDigits
       ? formatPhoneInput(phoneDigits)
       : "";

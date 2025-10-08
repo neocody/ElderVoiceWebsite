@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+
 import Stripe from "stripe";
 import type { Express } from "express";
 import { storage } from "../storage";
@@ -6,6 +8,8 @@ import {
   requireRole,
   withUserProfile,
 } from "../middleware/auth";
+
+dotenv.config();
 
 if (!process.env.STRIPE_SECRET) {
   throw new Error("Missing required Stripe secret: STRIPE_SECRET");
@@ -32,19 +36,19 @@ export function registerBillingRoutes(app: Express) {
         event = stripe.webhooks.constructEvent(
           req.body,
           sig,
-          process.env.STRIPE_WEBHOOK_SECRET,
+          process.env.STRIPE_WEBHOOK_SECRET
         );
       } else if (typeof req.body === "string") {
         // Fallback for express.text() middleware
         event = stripe.webhooks.constructEvent(
           req.body,
           sig,
-          process.env.STRIPE_WEBHOOK_SECRET,
+          process.env.STRIPE_WEBHOOK_SECRET
         );
       } else {
         console.error(
           "Webhook body is not raw - received parsed object:",
-          typeof req.body,
+          typeof req.body
         );
         return res.status(400).send("Webhook body must be raw");
       }
@@ -155,7 +159,7 @@ export function registerBillingRoutes(app: Express) {
           console.log(
             `Assigned new Stripe customer ${stripeCustomer.id} to user ${
               req.user!.id
-            }`,
+            }`
           );
         }
 
@@ -166,7 +170,7 @@ export function registerBillingRoutes(app: Express) {
         console.error("Error creating checkout session:", error);
         res.status(500).json({ error: "Failed to create checkout session" });
       }
-    },
+    }
   );
 
   // Create checkout session for signup flow (new)
@@ -265,7 +269,7 @@ export function registerBillingRoutes(app: Express) {
           message: error.message,
         });
       }
-    },
+    }
   );
 
   // Get checkout session status
@@ -323,7 +327,7 @@ export function registerBillingRoutes(app: Express) {
         console.error("Failed to fetch billing stats:", error);
         res.status(500).json({ error: "Failed to fetch billing stats" });
       }
-    },
+    }
   );
 
   // GET /api/billing/subscriptions
@@ -354,7 +358,7 @@ export function registerBillingRoutes(app: Express) {
         console.error("Failed to fetch subscriptions:", error);
         res.status(500).json({ error: "Failed to fetch subscriptions" });
       }
-    },
+    }
   );
 
   // GET /api/billing/transactions
@@ -370,7 +374,7 @@ export function registerBillingRoutes(app: Express) {
         console.error("Failed to fetch transactions:", error);
         res.status(500).json({ error: "Failed to fetch transactions" });
       }
-    },
+    }
   );
 
   // Create payment intent for one-time payments and subscriptions
@@ -456,7 +460,7 @@ export function registerBillingRoutes(app: Express) {
       // Validate plan change
       const validation = await planEnforcement.validatePlanChange(
         clientId,
-        planId,
+        planId
       );
       if (!validation.isAllowed) {
         return res.status(400).json({
@@ -563,7 +567,7 @@ export function registerBillingRoutes(app: Express) {
           }
           validation = await planEnforcement.validateCallLimit(
             clientId,
-            serviceId,
+            serviceId
           );
           break;
         default:
@@ -595,7 +599,7 @@ export function registerBillingRoutes(app: Express) {
       );
       const result = await planEnforcement.validateFeatureAccess(
         clientId,
-        feature,
+        feature
       );
 
       res.json(result);
@@ -624,7 +628,7 @@ export function registerBillingRoutes(app: Express) {
       await planEnforcement.trackCallUsage(
         clientId,
         serviceId,
-        durationSeconds,
+        durationSeconds
       );
 
       res.json({ success: true });
@@ -658,7 +662,7 @@ export function registerBillingRoutes(app: Express) {
       const usage = await storage.getClientUsageByMonth(
         clientId,
         targetMonth,
-        targetYear,
+        targetYear
       );
 
       // Get client's active service plan for context

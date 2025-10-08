@@ -88,14 +88,16 @@ export function registerAuthRoutes(app: Express) {
       // Generate a 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const key = contactKey(email, phone);
-      console.log(`otp`, otp);
+
+      // Store OTP
       pendingOtps.set(key, {
         code: otp,
         expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
       });
 
+      // Log after storing (ensures it logs every time)
       console.log(
-        `Your verification code is ${otp}. It expires in 10 minutes.`,
+        `OTP generated for ${email || phone}: ${otp} (expires in 10 minutes)`
       );
 
       // Send via chosen channel (uncomment when sms/email service is enabled)
@@ -114,7 +116,7 @@ export function registerAuthRoutes(app: Express) {
       //   try {
       //     await twilioSvc.sendSMS(
       //       phone,
-      //       `Your ElderVoice verification code is ${otp}. It expires in 10 minutes.`,
+      //       `Your ElderVoice verification code is ${otp}. It expires in 10 minutes.`
       //     );
       //   } catch (e) {
       //     console.error("Failed to send SMS:", e);
@@ -123,7 +125,7 @@ export function registerAuthRoutes(app: Express) {
       // }
 
       return res.json({
-        message: `Verification code sent ${JSON.stringify(otp)}`,
+        message: `Verification code sent`,
       });
     } catch (error) {
       console.error("Register start error:", error);
@@ -214,8 +216,8 @@ export function registerAuthRoutes(app: Express) {
       const signInPayload = email
         ? { email: email.toLowerCase(), password }
         : normalizedPhone
-          ? { phone: normalizedPhone, password }
-          : null;
+        ? { phone: normalizedPhone, password }
+        : null;
 
       if (!signInPayload) {
         return res
@@ -347,8 +349,9 @@ export function registerAuthRoutes(app: Express) {
       const { token } = result.data;
 
       // Verify token with Supabase
-      const { data: authData, error: authError } =
-        await supabase.auth.getUser(token);
+      const { data: authData, error: authError } = await supabase.auth.getUser(
+        token
+      );
 
       if (authError || !authData.user) {
         return res.status(401).json({
@@ -501,7 +504,7 @@ export function registerAuthRoutes(app: Express) {
       const userWithToken = authUsers.users.find(
         (user) =>
           user.user_metadata?.reset_token === token &&
-          user.user_metadata?.reset_token_expires > Date.now(),
+          user.user_metadata?.reset_token_expires > Date.now()
       );
 
       if (!userWithToken) {
@@ -520,7 +523,7 @@ export function registerAuthRoutes(app: Express) {
             reset_token: null,
             reset_token_expires: null,
           },
-        },
+        }
       );
 
       if (error) {

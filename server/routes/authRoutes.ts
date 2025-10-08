@@ -5,6 +5,19 @@ import { sendEmail, sendTemplateEmail } from "../services/emailService";
 import { randomBytes } from "crypto";
 import { storage } from "../storage";
 import { TwilioService } from "../services/twilioService";
+import { Resend } from "resend";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+if (!process.env.FROM_EMAIL) {
+  throw new Error("Missing FROM_EMAIL");
+}
+if (!process.env.RESEND_API_KEY) {
+  throw new Error("Missing RESEND_API_KEY");
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Validation schemas
 const registerStartSchema = z
@@ -100,29 +113,30 @@ export function registerAuthRoutes(app: Express) {
         `OTP generated for ${email || phone}: ${otp} (expires in 10 minutes)`
       );
 
-      // Send via chosen channel (uncomment when sms/email service is enabled)
-      // if (email) {
-      //   const sent = await sendEmail({
-      //     to: email,
-      //     from: process.env.FROM_EMAIL || "hello@eldervoice.com",
-      //     subject: "Your ElderVoice verification code",
-      //     text: `Your verification code is ${otp}. It expires in 10 minutes.`,
-      //   });
-      //   if (!sent) {
-      //     return res.status(500).json({ message: "Failed to send email" });
-      //   }
-      // } else if (phone) {
-      //   const twilioSvc = new TwilioService();
-      //   try {
-      //     await twilioSvc.sendSMS(
-      //       phone,
-      //       `Your ElderVoice verification code is ${otp}. It expires in 10 minutes.`
-      //     );
-      //   } catch (e) {
-      //     console.error("Failed to send SMS:", e);
-      //     return res.status(500).json({ message: "Failed to send SMS" });
-      //   }
-      // }
+      // Send via chosen channel
+      if (email) {
+        try {
+          await resend.emails.send({
+            from: process.env.FROM_EMAIL!,
+            to: email,
+            subject: "Your ElderVoice verification code",
+            html: `Your verification code is ${otp}. It expires in 10 minutes.`,
+          });
+        } catch (e) {
+          return res.status(500).json({ message: "Failed to send email" });
+        }
+      } else if (phone) {
+        const twilioSvc = new TwilioService();
+        try {
+          await twilioSvc.sendSMS(
+            phone,
+            `Your ElderVoice verification code is ${otp}. It expires in 10 minutes.`
+          );
+        } catch (e) {
+          console.error("Failed to send SMS:", e);
+          return res.status(500).json({ message: "Failed to send SMS" });
+        }
+      }
 
       return res.json({
         message: `Verification code sent`,

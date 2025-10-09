@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import "dotenv/config";
 import expressWs from "express-ws";
 import { createServer } from "http";
 import { registerRoutes } from "./routes";

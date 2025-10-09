@@ -872,7 +872,7 @@ export function registerCoreRoutes(app: Express) {
     }
   });
 
-  app.post(
+  app.patch(
     "/api/notifications/mark-all-read",
     isAuthenticated,
     async (req, res) => {

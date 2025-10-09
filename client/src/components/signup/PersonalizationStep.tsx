@@ -218,9 +218,12 @@ export default function PersonalizationStep() {
         {/* Progress Dots */}
         <div className="flex justify-center mt-4">
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setCurrentSection(0)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              className={`h-3 w-3 rounded-full p-0 transition-all duration-200 ${
                 currentSection === 0
                   ? "bg-purple-600 scale-125"
                   : "bg-gray-300 hover:bg-gray-400"
@@ -233,9 +236,12 @@ export default function PersonalizationStep() {
                 currentSection === 1 ? "bg-purple-600" : "bg-gray-300"
               }`}
             />
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setCurrentSection(1)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              className={`h-3 w-3 rounded-full p-0 transition-all duration-200 ${
                 currentSection === 1
                   ? "bg-purple-600 scale-125"
                   : "bg-gray-300 hover:bg-gray-400"
@@ -341,9 +347,12 @@ export default function PersonalizationStep() {
         {/* Progress Dots */}
         <div className="flex justify-center mt-4">
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setCurrentSection(0)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              className={`h-3 w-3 rounded-full p-0 transition-all duration-200 ${
                 currentSection === 0
                   ? "bg-purple-600 scale-125"
                   : "bg-gray-300 hover:bg-gray-400"
@@ -356,9 +365,12 @@ export default function PersonalizationStep() {
                 currentSection === 1 ? "bg-purple-600" : "bg-gray-300"
               }`}
             />
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setCurrentSection(1)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              className={`h-3 w-3 rounded-full p-0 transition-all duration-200 ${
                 currentSection === 1
                   ? "bg-purple-600 scale-125"
                   : "bg-gray-300 hover:bg-gray-400"

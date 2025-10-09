@@ -3,6 +3,7 @@ import { z } from "zod";
 import { storage } from "../storage";
 import { isAuthenticated, requireRole } from "../middleware/auth";
 import { stripeSync } from "../services/stripeSync";
+import { validateCouponCode } from "../services/couponValidation";
 import type { InsertCoupon } from "@shared/schema";
 
 const metadataSchema = z.record(z.string(), z.string()).optional();
@@ -67,6 +68,10 @@ const couponUpdateSchema = z
     message: "At least one field must be provided",
   });
 
+const couponValidateRequestSchema = z.object({
+  code: z.string().trim().min(3).max(64),
+});
+
 function parseRedeemBy(redeemBy?: string | null): Date | undefined {
   if (!redeemBy) return undefined;
   const date = new Date(redeemBy);
@@ -77,6 +82,54 @@ function parseRedeemBy(redeemBy?: string | null): Date | undefined {
 }
 
 export function registerCouponRoutes(app: Express) {
+  app.post("/api/coupons/validate", isAuthenticated, async (req, res) => {
+    try {
+      const parsed = couponValidateRequestSchema.safeParse(req.body ?? {});
+
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "Invalid coupon validation payload",
+          errors: parsed.error.flatten(),
+        });
+      }
+
+      const result = await validateCouponCode(parsed.data.code);
+      if (!result.valid) {
+        return res.status(400).json({
+          valid: false,
+          message: result.reason,
+        });
+      }
+
+      const { coupon } = result;
+      const redeemBy =
+        coupon.redeemBy instanceof Date
+          ? coupon.redeemBy.toISOString()
+          : coupon.redeemBy
+            ? new Date(coupon.redeemBy).toISOString()
+            : null;
+
+      res.json({
+        valid: true,
+        coupon: {
+          code: coupon.code,
+          name: coupon.name,
+          couponType: coupon.couponType,
+          percentOff: coupon.percentOff,
+          amountOff: coupon.amountOff,
+          currency: coupon.currency,
+          duration: coupon.duration,
+          durationInMonths: coupon.durationInMonths,
+          maxRedemptions: coupon.maxRedemptions,
+          redeemBy,
+        },
+      });
+    } catch (error) {
+      console.error("Error validating coupon:", error);
+      res.status(500).json({ message: "Failed to validate coupon" });
+    }
+  });
+
   app.get(
     "/api/coupons",
     isAuthenticated,

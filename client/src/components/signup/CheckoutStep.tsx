@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useSignup } from "@/contexts/SignupContext";
 import { apiRequest } from "@/lib/queryClient";
 import { CheckCircle, CreditCard, Shield, Calendar, Phone } from "lucide-react";
@@ -12,15 +13,101 @@ declare global {
   }
 }
 
+type ValidatedCoupon = {
+  code: string;
+  name: string | null;
+  couponType: "percent" | "amount";
+  percentOff: number | null;
+  amountOff: number | null;
+  currency: string | null;
+  duration: string;
+  durationInMonths: number | null;
+  maxRedemptions: number | null;
+  redeemBy: string | null;
+};
+
+type CouponValidationResponse =
+  | {
+      valid: true;
+      coupon: ValidatedCoupon;
+    }
+  | {
+      valid: false;
+      message?: string;
+    };
+
+function formatCouponSavings(coupon: ValidatedCoupon): string {
+  if (
+    coupon.couponType === "percent" &&
+    typeof coupon.percentOff === "number"
+  ) {
+    return `${coupon.percentOff}% off your subscription`;
+  }
+
+  if (coupon.couponType === "amount" && typeof coupon.amountOff === "number") {
+    const currencyCode = (coupon.currency || "usd").toUpperCase();
+    try {
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currencyCode,
+      }).format(coupon.amountOff / 100);
+      return `${formatted} off your subscription`;
+    } catch (error) {
+      console.warn("Failed to format coupon amount", error);
+      return `${coupon.amountOff / 100} ${currencyCode} off your subscription`;
+    }
+  }
+
+  return "Discount applied";
+}
+
+function formatCouponExpiration(coupon: ValidatedCoupon): string | null {
+  if (!coupon.redeemBy) return null;
+  const date = new Date(coupon.redeemBy);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function parseCouponError(error: unknown): string {
+  if (error instanceof Error) {
+    const parts = error.message.split(": ");
+    if (parts.length > 1) {
+      const possibleJson = parts.slice(1).join(": ").trim();
+      try {
+        const parsed = JSON.parse(possibleJson);
+        if (typeof parsed?.message === "string") {
+          return parsed.message;
+        }
+      } catch {
+        return possibleJson;
+      }
+    }
+    return error.message;
+  }
+
+  return "Failed to apply coupon. Please try again.";
+}
+
 export default function CheckoutStep() {
   const { data, nextStep, prevStep } = useSignup();
   const checkoutRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [couponCodeInput, setCouponCodeInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<ValidatedCoupon | null>(
+    null
+  );
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   // Add ref to track if component is still mounted
   const isMountedRef = useRef(true);
   const checkoutInstanceRef = useRef<any>(null);
+  const checkoutInitIdRef = useRef(0);
 
   const isLovedOneFlow = data.userType === "loved-one";
   const firstName =
@@ -40,9 +127,18 @@ export default function CheckoutStep() {
     ],
   };
 
-  // Initialize Embedded Checkout
   useEffect(() => {
     isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Initialize Embedded Checkout
+  useEffect(() => {
+    const currentInitId = ++checkoutInitIdRef.current;
+    setError(null);
+    setIsLoading(true);
     let timeoutId: NodeJS.Timeout;
 
     const initializeCheckout = async () => {
@@ -50,7 +146,10 @@ export default function CheckoutStep() {
         console.log("Starting checkout initialization...");
 
         // Check if component is still mounted
-        if (!isMountedRef.current) {
+        if (
+          !isMountedRef.current ||
+          currentInitId !== checkoutInitIdRef.current
+        ) {
           console.log("Component unmounted, aborting initialization");
           return;
         }
@@ -76,9 +175,21 @@ export default function CheckoutStep() {
         const fetchClientSecret = async () => {
           console.log("Fetching client secret...");
 
+          const payload = appliedCoupon
+            ? { couponCode: appliedCoupon.code }
+            : undefined;
+
+          if (payload) {
+            console.log(
+              "Applying coupon to checkout session:",
+              appliedCoupon?.code
+            );
+          }
+
           const response = await apiRequest(
             "POST",
             "/api/billing/create-signup-checkout-session",
+            payload
           );
 
           const result = await response.json();
@@ -101,13 +212,16 @@ export default function CheckoutStep() {
         checkoutInstanceRef.current = checkout;
 
         console.log(
-          "Checkout initialized, checking if component is still mounted...",
+          "Checkout initialized, checking if component is still mounted..."
         );
 
         // Double-check component is mounted and ref is available before mounting
-        if (!isMountedRef.current) {
+        if (
+          !isMountedRef.current ||
+          currentInitId !== checkoutInitIdRef.current
+        ) {
           console.log(
-            "Component unmounted during initialization, destroying checkout",
+            "Component unmounted during initialization, destroying checkout"
           );
           checkout.destroy();
           return;
@@ -116,7 +230,12 @@ export default function CheckoutStep() {
         if (!checkoutRef.current) {
           console.log("Checkout ref not available, retrying in 100ms...");
           timeoutId = setTimeout(() => {
-            if (isMountedRef.current && checkoutRef.current && checkout) {
+            if (
+              isMountedRef.current &&
+              currentInitId === checkoutInitIdRef.current &&
+              checkoutRef.current &&
+              checkout
+            ) {
               console.log("Retry: mounting checkout to DOM...");
               try {
                 checkout.mount(checkoutRef.current); // returns void
@@ -143,14 +262,24 @@ export default function CheckoutStep() {
         }
 
         console.log("Mounting checkout to DOM...");
+
+        if (currentInitId !== checkoutInitIdRef.current) {
+          console.log("Newer checkout initialization detected, aborting mount");
+          checkout.destroy();
+          return;
+        }
+
         await checkout.mount(checkoutRef.current);
 
-        if (isMountedRef.current) {
+        if (
+          isMountedRef.current &&
+          currentInitId === checkoutInitIdRef.current
+        ) {
           console.log("Checkout mounted successfully");
           setIsLoading(false);
         } else {
           console.log(
-            "Component unmounted after mounting, destroying checkout",
+            "Component unmounted after mounting, destroying checkout"
           );
           checkout.destroy();
         }
@@ -191,7 +320,6 @@ export default function CheckoutStep() {
 
     return () => {
       console.log("Cleanup: Component unmounting");
-      isMountedRef.current = false;
 
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -207,7 +335,63 @@ export default function CheckoutStep() {
         cleanupInterval();
       }
     };
-  }, [data]); // Keep data dependency to reinitialize if signup data changes
+  }, [data, appliedCoupon?.code]); // Reinitialize when signup data or coupon changes
+
+  const handleApplyCoupon = async (
+    event?: FormEvent<HTMLFormElement>
+  ): Promise<void> => {
+    event?.preventDefault();
+    if (isApplyingCoupon) return;
+
+    const normalizedCode = couponCodeInput.trim().toUpperCase();
+    if (!normalizedCode) {
+      setCouponError("Enter a coupon code to apply.");
+      return;
+    }
+
+    if (appliedCoupon && appliedCoupon.code === normalizedCode) {
+      setCouponError("This coupon is already applied.");
+      return;
+    }
+
+    try {
+      setIsApplyingCoupon(true);
+      setCouponError(null);
+
+      const response = await apiRequest("POST", "/api/coupons/validate", {
+        code: normalizedCode,
+      });
+      const result = (await response.json()) as CouponValidationResponse;
+
+      if (!result.valid) {
+        setCouponError(
+          result.message ?? "Unable to apply coupon. Please try again."
+        );
+        return;
+      }
+
+      setAppliedCoupon(result.coupon);
+      setCouponCodeInput(result.coupon.code);
+      setError(null);
+      setIsLoading(true);
+      console.log("Coupon applied successfully:", result.coupon.code);
+    } catch (err) {
+      console.error("Failed to apply coupon:", err);
+      setCouponError(parseCouponError(err));
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    if (!appliedCoupon) return;
+    console.log("Removing coupon:", appliedCoupon.code);
+    setAppliedCoupon(null);
+    setCouponCodeInput("");
+    setCouponError(null);
+    setError(null);
+    setIsLoading(true);
+  };
 
   const getCallScheduleSummary = () => {
     const dayCount = data.callPreferences.days?.length || 0;
@@ -216,6 +400,13 @@ export default function CheckoutStep() {
     if (dayCount === 7) return `Daily calls in the ${timeOfDay}`;
     return `${dayCount} calls per week in the ${timeOfDay}`;
   };
+
+  const appliedCouponSavings = appliedCoupon
+    ? formatCouponSavings(appliedCoupon)
+    : null;
+  const appliedCouponExpiration = appliedCoupon
+    ? formatCouponExpiration(appliedCoupon)
+    : null;
 
   if (error) {
     return (
@@ -348,35 +539,103 @@ export default function CheckoutStep() {
             </div>
 
             <CardContent className="p-0">
-              <div className="relative">
-                <div
-                  ref={checkoutRef}
-                  style={{
-                    width: "100%",
-                    minHeight: "450px",
-                    backgroundColor: "white",
-                  }}
-                  className="rounded-b-lg"
-                />
-                {isLoading && (
-                  <div className="absolute inset-0 bg-white rounded-b-lg flex items-center justify-center">
-                    <div className="text-center py-16">
-                      <div className="relative mb-6">
-                        <div className="animate-spin w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-6 h-6 bg-blue-600 rounded-full animate-pulse" />
+              <div className="space-y-0">
+                <div className="p-6 space-y-4 border-b border-slate-200/80">
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900">
+                      Have a coupon code?
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      Apply a promotional code before completing your
+                      subscription.
+                    </p>
+                  </div>
+
+                  {appliedCoupon ? (
+                    <div className="flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="text-sm font-semibold text-emerald-700 uppercase tracking-wide">
+                          Coupon {appliedCoupon.code} applied
+                        </div>
+                        <div className="text-sm text-emerald-600">
+                          {appliedCouponSavings}
+                          {appliedCouponExpiration
+                            ? ` · Expires ${appliedCouponExpiration}`
+                            : ""}
                         </div>
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                        Setting up secure checkout...
-                      </h3>
-                      <p className="text-gray-600 max-w-sm mx-auto leading-relaxed">
-                        We're preparing your encrypted payment form. This will
-                        only take a moment.
-                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={handleRemoveCoupon}
+                        disabled={isApplyingCoupon}
+                      >
+                        Remove
+                      </Button>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <form
+                      className="flex flex-col gap-3 sm:flex-row"
+                      onSubmit={handleApplyCoupon}
+                    >
+                      <Input
+                        value={couponCodeInput}
+                        onChange={(event) => {
+                          setCouponCodeInput(event.target.value.toUpperCase());
+                          if (couponError) {
+                            setCouponError(null);
+                          }
+                        }}
+                        placeholder="Enter coupon code"
+                        className="uppercase"
+                        disabled={isApplyingCoupon}
+                        autoComplete="off"
+                        aria-label="Coupon code"
+                      />
+                      <Button
+                        type="submit"
+                        disabled={isApplyingCoupon}
+                        className="sm:w-32"
+                      >
+                        {isApplyingCoupon ? "Applying..." : "Apply"}
+                      </Button>
+                    </form>
+                  )}
+
+                  {couponError && (
+                    <p className="text-sm text-red-600">{couponError}</p>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <div
+                    ref={checkoutRef}
+                    style={{
+                      width: "100%",
+                      minHeight: "450px",
+                      backgroundColor: "white",
+                    }}
+                    className="rounded-b-lg"
+                  />
+                  {isLoading && (
+                    <div className="absolute inset-0 bg-white rounded-b-lg flex items-center justify-center">
+                      <div className="text-center py-16">
+                        <div className="relative mb-6">
+                          <div className="animate-spin w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full mx-auto" />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-6 h-6 bg-blue-600 rounded-full animate-pulse" />
+                          </div>
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                          Setting up secure checkout...
+                        </h3>
+                        <p className="text-gray-600 max-w-sm mx-auto leading-relaxed">
+                          We're preparing your encrypted payment form. This will
+                          only take a moment.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

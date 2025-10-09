@@ -3,11 +3,14 @@ import dotenv from "dotenv";
 import Stripe from "stripe";
 import type { Express } from "express";
 import { storage } from "../storage";
+import { z } from "zod";
 import {
   isAuthenticated,
   requireRole,
   withUserProfile,
 } from "../middleware/auth";
+import { validateCouponCode } from "../services/couponValidation";
+import type { Coupon } from "@shared/schema";
 
 dotenv.config();
 
@@ -20,6 +23,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET, {
 });
 
 export function registerBillingRoutes(app: Express) {
+  const signupCheckoutRequestSchema = z.object({
+    couponCode: z.string().trim().min(3).max(64).optional(),
+  });
+
   // Webhook for Stripe events
   app.post("/api/billing/webhook", async (req, res) => {
     const sig = req.headers["stripe-signature"];
@@ -180,6 +187,19 @@ export function registerBillingRoutes(app: Express) {
     withUserProfile,
     async (req, res) => {
       try {
+        const parsedBody = signupCheckoutRequestSchema.safeParse(
+          typeof req.body === "object" && req.body !== null ? req.body : {}
+        );
+
+        if (!parsedBody.success) {
+          return res.status(400).json({
+            error: "Invalid checkout request payload",
+            details: parsedBody.error.flatten(),
+          });
+        }
+
+        const couponCode = parsedBody.data.couponCode;
+
         const plan = await storage.getDefaultServicePlan();
         if (!plan) {
           return res
@@ -210,6 +230,17 @@ export function registerBillingRoutes(app: Express) {
           return res.status(500).json({ error: "User profile not loaded" });
         }
 
+        let appliedCoupon: Coupon | null = null;
+        if (couponCode) {
+          const validationResult = await validateCouponCode(couponCode);
+          if (!validationResult.valid) {
+            return res.status(400).json({
+              error: validationResult.reason,
+            });
+          }
+          appliedCoupon = validationResult.coupon;
+        }
+
         let stripeCustomerId = userProfile.stripeCustomerId;
 
         if (!stripeCustomerId) {
@@ -237,6 +268,11 @@ export function registerBillingRoutes(app: Express) {
           userId: req.user!.id,
         };
 
+        if (appliedCoupon) {
+          metadata.couponCode = appliedCoupon.code;
+          metadata.couponId = appliedCoupon.id.toString();
+        }
+
         const sessionParams: Stripe.Checkout.SessionCreateParams = {
           customer: stripeCustomerId,
           payment_method_types: ["card"],
@@ -255,6 +291,27 @@ export function registerBillingRoutes(app: Express) {
           ui_mode: "embedded",
           return_url: `${frontendURL}/getstarted?session_id={CHECKOUT_SESSION_ID}`,
         };
+
+        if (appliedCoupon) {
+          if (appliedCoupon.stripePromotionCodeId) {
+            sessionParams.discounts = [
+              {
+                promotion_code: appliedCoupon.stripePromotionCodeId,
+              },
+            ];
+          } else if (appliedCoupon.stripeCouponId) {
+            sessionParams.discounts = [
+              {
+                coupon: appliedCoupon.stripeCouponId,
+              },
+            ];
+          } else {
+            return res.status(400).json({
+              error:
+                "Coupon is missing Stripe identifiers and cannot be applied",
+            });
+          }
+        }
 
         const session = await stripe.checkout.sessions.create(sessionParams);
 

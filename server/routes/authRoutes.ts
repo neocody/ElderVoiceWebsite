@@ -295,33 +295,33 @@ export function registerAuthRoutes(app: Express) {
         });
       }
 
-      // Update emailVerified status if needed
-      if (!userData.emailVerified && authData.user.email_confirmed_at) {
-        // Use your typed, centralized update method
-        const updatedUser = await storage.updateUser(authData.user.id, {
-          emailVerified: true,
-        });
+      // Parallelize user update and subscription check for better performance
+      const [finalUserData, hasSubscription] = await Promise.all([
+        // Update emailVerified status if needed
+        !userData.emailVerified && authData.user.email_confirmed_at
+          ? storage.updateUser(authData.user.id, { emailVerified: true })
+          : Promise.resolve(userData),
+        // Check subscription status in parallel
+        storage.hasActiveSubscription(authData.user.id)
+      ]);
 
-        // Optionally update the local userData reference (if you need it later in the function)
-        Object.assign(userData, updatedUser);
-      }
-
-      console.log(`User data fetched: ${userData.id}`);
+      console.log(`User data fetched: ${finalUserData.id}, hasSubscription: ${hasSubscription}`);
 
       res.json({
         message: "Login successful",
         user: {
-          id: userData.id,
-          email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          phone: userData.phone,
-          emailVerified: userData.emailVerified,
-          role: userData.role,
-          createdAt: userData.createdAt,
-          updatedAt: userData.updatedAt,
+          id: finalUserData.id,
+          email: finalUserData.email,
+          firstName: finalUserData.firstName,
+          lastName: finalUserData.lastName,
+          phone: finalUserData.phone,
+          emailVerified: finalUserData.emailVerified,
+          role: finalUserData.role,
+          createdAt: finalUserData.createdAt,
+          updatedAt: finalUserData.updatedAt,
         },
         session: authData.session,
+        hasSubscription: !!hasSubscription,
       });
     } catch (error) {
       console.error("Login error:", error);

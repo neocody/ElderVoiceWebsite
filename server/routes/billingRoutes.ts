@@ -1,11 +1,18 @@
+import dotenv from "dotenv";
+
 import Stripe from "stripe";
 import type { Express } from "express";
 import { storage } from "../storage";
+import { z } from "zod";
 import {
   isAuthenticated,
   requireRole,
   withUserProfile,
 } from "../middleware/auth";
+import { validateCouponCode } from "../services/couponValidation";
+import type { Coupon } from "@shared/schema";
+
+dotenv.config();
 
 if (!process.env.STRIPE_SECRET) {
   throw new Error("Missing required Stripe secret: STRIPE_SECRET");
@@ -16,6 +23,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET, {
 });
 
 export function registerBillingRoutes(app: Express) {
+  const signupCheckoutRequestSchema = z.object({
+    couponCode: z.string().trim().min(3).max(64).optional(),
+  });
+
   // Webhook for Stripe events
   app.post("/api/billing/webhook", async (req, res) => {
     const sig = req.headers["stripe-signature"];
@@ -32,19 +43,19 @@ export function registerBillingRoutes(app: Express) {
         event = stripe.webhooks.constructEvent(
           req.body,
           sig,
-          process.env.STRIPE_WEBHOOK_SECRET,
+          process.env.STRIPE_WEBHOOK_SECRET
         );
       } else if (typeof req.body === "string") {
         // Fallback for express.text() middleware
         event = stripe.webhooks.constructEvent(
           req.body,
           sig,
-          process.env.STRIPE_WEBHOOK_SECRET,
+          process.env.STRIPE_WEBHOOK_SECRET
         );
       } else {
         console.error(
           "Webhook body is not raw - received parsed object:",
-          typeof req.body,
+          typeof req.body
         );
         return res.status(400).send("Webhook body must be raw");
       }
@@ -155,7 +166,7 @@ export function registerBillingRoutes(app: Express) {
           console.log(
             `Assigned new Stripe customer ${stripeCustomer.id} to user ${
               req.user!.id
-            }`,
+            }`
           );
         }
 
@@ -166,7 +177,7 @@ export function registerBillingRoutes(app: Express) {
         console.error("Error creating checkout session:", error);
         res.status(500).json({ error: "Failed to create checkout session" });
       }
-    },
+    }
   );
 
   // Create checkout session for signup flow (new)
@@ -176,6 +187,19 @@ export function registerBillingRoutes(app: Express) {
     withUserProfile,
     async (req, res) => {
       try {
+        const parsedBody = signupCheckoutRequestSchema.safeParse(
+          typeof req.body === "object" && req.body !== null ? req.body : {}
+        );
+
+        if (!parsedBody.success) {
+          return res.status(400).json({
+            error: "Invalid checkout request payload",
+            details: parsedBody.error.flatten(),
+          });
+        }
+
+        const couponCode = parsedBody.data.couponCode;
+
         const plan = await storage.getDefaultServicePlan();
         if (!plan) {
           return res
@@ -206,6 +230,17 @@ export function registerBillingRoutes(app: Express) {
           return res.status(500).json({ error: "User profile not loaded" });
         }
 
+        let appliedCoupon: Coupon | null = null;
+        if (couponCode) {
+          const validationResult = await validateCouponCode(couponCode);
+          if (!validationResult.valid) {
+            return res.status(400).json({
+              error: validationResult.reason,
+            });
+          }
+          appliedCoupon = validationResult.coupon;
+        }
+
         let stripeCustomerId = userProfile.stripeCustomerId;
 
         if (!stripeCustomerId) {
@@ -233,6 +268,11 @@ export function registerBillingRoutes(app: Express) {
           userId: req.user!.id,
         };
 
+        if (appliedCoupon) {
+          metadata.couponCode = appliedCoupon.code;
+          metadata.couponId = appliedCoupon.id.toString();
+        }
+
         const sessionParams: Stripe.Checkout.SessionCreateParams = {
           customer: stripeCustomerId,
           payment_method_types: ["card"],
@@ -252,6 +292,27 @@ export function registerBillingRoutes(app: Express) {
           return_url: `${frontendURL}/getstarted?session_id={CHECKOUT_SESSION_ID}`,
         };
 
+        if (appliedCoupon) {
+          if (appliedCoupon.stripePromotionCodeId) {
+            sessionParams.discounts = [
+              {
+                promotion_code: appliedCoupon.stripePromotionCodeId,
+              },
+            ];
+          } else if (appliedCoupon.stripeCouponId) {
+            sessionParams.discounts = [
+              {
+                coupon: appliedCoupon.stripeCouponId,
+              },
+            ];
+          } else {
+            return res.status(400).json({
+              error:
+                "Coupon is missing Stripe identifiers and cannot be applied",
+            });
+          }
+        }
+
         const session = await stripe.checkout.sessions.create(sessionParams);
 
         res.json({
@@ -265,7 +326,7 @@ export function registerBillingRoutes(app: Express) {
           message: error.message,
         });
       }
-    },
+    }
   );
 
   // Get checkout session status
@@ -323,7 +384,7 @@ export function registerBillingRoutes(app: Express) {
         console.error("Failed to fetch billing stats:", error);
         res.status(500).json({ error: "Failed to fetch billing stats" });
       }
-    },
+    }
   );
 
   // GET /api/billing/subscriptions
@@ -354,7 +415,7 @@ export function registerBillingRoutes(app: Express) {
         console.error("Failed to fetch subscriptions:", error);
         res.status(500).json({ error: "Failed to fetch subscriptions" });
       }
-    },
+    }
   );
 
   // GET /api/billing/transactions
@@ -370,7 +431,7 @@ export function registerBillingRoutes(app: Express) {
         console.error("Failed to fetch transactions:", error);
         res.status(500).json({ error: "Failed to fetch transactions" });
       }
-    },
+    }
   );
 
   // Create payment intent for one-time payments and subscriptions
@@ -456,7 +517,7 @@ export function registerBillingRoutes(app: Express) {
       // Validate plan change
       const validation = await planEnforcement.validatePlanChange(
         clientId,
-        planId,
+        planId
       );
       if (!validation.isAllowed) {
         return res.status(400).json({
@@ -563,7 +624,7 @@ export function registerBillingRoutes(app: Express) {
           }
           validation = await planEnforcement.validateCallLimit(
             clientId,
-            serviceId,
+            serviceId
           );
           break;
         default:
@@ -595,7 +656,7 @@ export function registerBillingRoutes(app: Express) {
       );
       const result = await planEnforcement.validateFeatureAccess(
         clientId,
-        feature,
+        feature
       );
 
       res.json(result);
@@ -624,7 +685,7 @@ export function registerBillingRoutes(app: Express) {
       await planEnforcement.trackCallUsage(
         clientId,
         serviceId,
-        durationSeconds,
+        durationSeconds
       );
 
       res.json({ success: true });
@@ -658,7 +719,7 @@ export function registerBillingRoutes(app: Express) {
       const usage = await storage.getClientUsageByMonth(
         clientId,
         targetMonth,
-        targetYear,
+        targetYear
       );
 
       // Get client's active service plan for context

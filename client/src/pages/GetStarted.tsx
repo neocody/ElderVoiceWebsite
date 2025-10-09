@@ -5,14 +5,14 @@ import { Link } from "wouter";
 import { useEffect } from "react";
 
 // Import step components
-import UserTypeSelection from "@/components/signup/UserTypeSelection";
-import VerificationStep from "@/components/signup/VerificationStep";
-import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
-import PersonalizationStep from "@/components/signup/PersonalizationStep";
-import CallPreferencesStep from "@/components/signup/CallPreferencesStep";
-import CheckoutStep from "@/components/signup/CheckoutStep";
-import SuccessStep from "@/components/signup/SuccessStep";
-import CaregiverInfoStep from "@/components/signup/CaregiverInfoStep";
+import UserTypeSelection from "@/components/signup/userTypeSelection";
+import VerificationStep from "@/components/signup/verification";
+import PersonalInfoStep from "@/components/signup/personalInfo";
+import PersonalizationStep from "@/components/signup/personalization";
+import CallPreferencesStep from "@/components/signup/callPreferences";
+import CheckoutStep from "@/components/signup/checkout";
+import SuccessStep from "@/components/signup/success";
+import CaregiverInfoStep from "@/components/signup/careGiverInfo";
 
 function GetStartedContent() {
   const { data, prevStep, resetFlow, updateData } = useSignup();

@@ -70,7 +70,7 @@ export default function CaregiverInfoStep() {
 
   const handleInputChange = (
     field: "firstName" | "lastName" | "phone" | "email",
-    value: string,
+    value: string
   ) => {
     if (field === "phone") {
       const formatted = formatPhone(value);
@@ -216,40 +216,38 @@ export default function CaregiverInfoStep() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {showPhoneInput && (
-              <div>
-                <Label htmlFor="caregiver-phone">
-                  {needsPhone ? "Phone number *" : "Phone number"}
-                </Label>
-                <Input
-                  id="caregiver-phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="(555) 123-4567"
-                  maxLength={14}
-                  data-testid="input-caregiver-phone"
-                />
-              </div>
-            )}
+          {showPhoneInput && (
+            <div>
+              <Label htmlFor="caregiver-phone">
+                {needsPhone ? "Phone number *" : "Phone number"}
+              </Label>
+              <Input
+                id="caregiver-phone"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
+                placeholder="(555) 123-4567"
+                maxLength={14}
+                data-testid="input-caregiver-phone"
+              />
+            </div>
+          )}
 
-            {showEmailInput && (
-              <div>
-                <Label htmlFor="caregiver-email">
-                  {needsEmail ? "Email address *" : "Email address"}
-                </Label>
-                <Input
-                  id="caregiver-email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  placeholder="you@example.com"
-                  data-testid="input-caregiver-email"
-                />
-              </div>
-            )}
-          </div>
+          {showEmailInput && (
+            <div>
+              <Label htmlFor="caregiver-email">
+                {needsEmail ? "Email address *" : "Email address"}
+              </Label>
+              <Input
+                id="caregiver-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                placeholder="you@example.com"
+                data-testid="input-caregiver-email"
+              />
+            </div>
+          )}
 
           <div className="flex gap-3 pt-2">
             <Button variant="outline" onClick={prevStep} disabled={isLoading}>

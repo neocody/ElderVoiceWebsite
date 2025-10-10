@@ -10,64 +10,9 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Bell, CheckCircle, AlertTriangle, Info, MessageSquare, Phone, Calendar, Settings, Check } from "lucide-react";
 
-// Mock notifications data for development
-const mockNotifications = [
-  {
-    id: 1,
-    type: "call_completed",
-    title: "Call Completed Successfully",
-    message: "Your scheduled call with Margaret Thompson was completed successfully. Duration: 8 minutes.",
-    elderlyUserId: 1,
-    elderlyUserName: "Margaret Thompson",
-    createdAt: new Date().toISOString(),
-    isRead: false
-  },
-  {
-    id: 2,
-    type: "call_failed",
-    title: "Call Failed - Retry Scheduled",
-    message: "Unable to reach Robert Johnson at scheduled time. System will automatically retry in 30 minutes.",
-    elderlyUserId: 2,
-    elderlyUserName: "Robert Johnson",
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    isRead: false
-  },
-  {
-    id: 3,
-    type: "schedule_reminder",
-    title: "Upcoming Call Reminder",
-    message: "Reminder: You have a call scheduled with Eleanor Davis in 15 minutes.",
-    elderlyUserId: 3,
-    elderlyUserName: "Eleanor Davis",
-    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    isRead: true
-  },
-  {
-    id: 4,
-    type: "system_alert",
-    title: "Monthly Usage Alert",
-    message: "You have used 85% of your monthly call allocation. Consider upgrading your plan.",
-    elderlyUserId: null,
-    elderlyUserName: null,
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    isRead: false
-  },
-  {
-    id: 5,
-    type: "wellbeing_alert",
-    title: "Wellbeing Check Alert",
-    message: "Margaret Thompson mentioned feeling lonely during today's call. Consider scheduling additional check-ins.",
-    elderlyUserId: 1,
-    elderlyUserName: "Margaret Thompson",
-    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-    isRead: true
-  }
-];
-
 export default function Notifications() {
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("all");
-  const [mockReadStatus, setMockReadStatus] = useState<Record<number, boolean>>({});
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ["/api/notifications"],
@@ -75,19 +20,10 @@ export default function Notifications() {
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      // If using mock data, handle locally
-      if (notifications.length === 0) {
-        setMockReadStatus(prev => ({ ...prev, [notificationId]: true }));
-        return { success: true };
-      }
-      // Otherwise call the API
       await apiRequest(`/api/notifications/${notificationId}/read`, "PATCH");
     },
-    onSuccess: (data, notificationId) => {
-      // Only invalidate queries if we actually called the API
-      if (notifications.length > 0) {
-        queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       toast({
         title: "Notification marked as read",
         description: "The notification has been updated.",
@@ -115,23 +51,10 @@ export default function Notifications() {
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      // If using mock data, handle locally
-      if (notifications.length === 0) {
-        const allMockIds = mockNotifications.reduce((acc, n) => {
-          acc[n.id] = true;
-          return acc;
-        }, {} as Record<number, boolean>);
-        setMockReadStatus(allMockIds);
-        return { success: true };
-      }
-      // Otherwise call the API
       await apiRequest("/api/notifications/mark-all-read", "PATCH");
     },
     onSuccess: () => {
-      // Only invalidate queries if we actually called the API
-      if (notifications.length > 0) {
-        queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       toast({
         title: "All notifications marked as read",
         description: "Your notification list has been cleared.",
@@ -157,16 +80,7 @@ export default function Notifications() {
     },
   });
 
-  
-
-  // Apply mock read status to mock notifications if we're using them
-  const currentNotifications = notifications.length > 0 
-    ? notifications 
-    : mockNotifications.map(n => ({
-        ...n,
-        isRead: mockReadStatus[n.id] ?? n.isRead
-      }));
-
+  const currentNotifications = notifications;
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -271,16 +185,24 @@ export default function Notifications() {
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">
-              {filterNotifications(currentNotifications, "all").map((notification) => (
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  onMarkAsRead={markAsReadMutation.mutate}
-                  getNotificationIcon={getNotificationIcon}
-                  getNotificationBadge={getNotificationBadge}
-                  formatTimeAgo={formatTimeAgo}
-                />
-              ))}
+              {filterNotifications(currentNotifications, "all").length === 0 ? (
+                <div className="text-center py-12">
+                  <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-textPrimary mb-2">No Notifications Yet</h3>
+                  <p className="text-textSecondary">You're all caught up! Check back later for updates.</p>
+                </div>
+              ) : (
+                filterNotifications(currentNotifications, "all").map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    notification={notification}
+                    onMarkAsRead={markAsReadMutation.mutate}
+                    getNotificationIcon={getNotificationIcon}
+                    getNotificationBadge={getNotificationBadge}
+                    formatTimeAgo={formatTimeAgo}
+                  />
+                ))
+              )}
             </TabsContent>
 
             <TabsContent value="unread" className="space-y-4">
@@ -304,29 +226,45 @@ export default function Notifications() {
             </TabsContent>
 
             <TabsContent value="calls" className="space-y-4">
-              {filterNotifications(currentNotifications, "calls").map((notification) => (
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  onMarkAsRead={markAsReadMutation.mutate}
-                  getNotificationIcon={getNotificationIcon}
-                  getNotificationBadge={getNotificationBadge}
-                  formatTimeAgo={formatTimeAgo}
-                />
-              ))}
+              {filterNotifications(currentNotifications, "calls").length === 0 ? (
+                <div className="text-center py-12">
+                  <Phone className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-textPrimary mb-2">No Call Notifications</h3>
+                  <p className="text-textSecondary">No call-related notifications at this time.</p>
+                </div>
+              ) : (
+                filterNotifications(currentNotifications, "calls").map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    notification={notification}
+                    onMarkAsRead={markAsReadMutation.mutate}
+                    getNotificationIcon={getNotificationIcon}
+                    getNotificationBadge={getNotificationBadge}
+                    formatTimeAgo={formatTimeAgo}
+                  />
+                ))
+              )}
             </TabsContent>
 
             <TabsContent value="alerts" className="space-y-4">
-              {filterNotifications(currentNotifications, "alerts").map((notification) => (
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  onMarkAsRead={markAsReadMutation.mutate}
-                  getNotificationIcon={getNotificationIcon}
-                  getNotificationBadge={getNotificationBadge}
-                  formatTimeAgo={formatTimeAgo}
-                />
-              ))}
+              {filterNotifications(currentNotifications, "alerts").length === 0 ? (
+                <div className="text-center py-12">
+                  <AlertTriangle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-textPrimary mb-2">No Alerts</h3>
+                  <p className="text-textSecondary">No alert notifications at this time.</p>
+                </div>
+              ) : (
+                filterNotifications(currentNotifications, "alerts").map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    notification={notification}
+                    onMarkAsRead={markAsReadMutation.mutate}
+                    getNotificationIcon={getNotificationIcon}
+                    getNotificationBadge={getNotificationBadge}
+                    formatTimeAgo={formatTimeAgo}
+                  />
+                ))
+              )}
             </TabsContent>
           </Tabs>
         </main>

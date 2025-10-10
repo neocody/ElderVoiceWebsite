@@ -1,5 +1,5 @@
-import { LRUCache } from 'lru-cache';
-import { Request, Response, NextFunction } from 'express';
+import { LRUCache } from "lru-cache";
+import { Request, Response, NextFunction } from "express";
 
 // In-memory caching service for performance optimization
 export class CacheService {
@@ -90,21 +90,25 @@ export class CacheService {
         max: this.cache.max,
         hits: this.cacheHits,
         misses: this.cacheMisses,
-        hitRate: totalMainRequests > 0 ? this.cacheHits / totalMainRequests : 0
+        hitRate: totalMainRequests > 0 ? this.cacheHits / totalMainRequests : 0,
       },
       shortTermCache: {
         size: this.ttlCache.size,
         max: this.ttlCache.max,
         hits: this.ttlCacheHits,
         misses: this.ttlCacheMisses,
-        hitRate: totalTtlRequests > 0 ? this.ttlCacheHits / totalTtlRequests : 0
+        hitRate:
+          totalTtlRequests > 0 ? this.ttlCacheHits / totalTtlRequests : 0,
       },
       // Combined statistics for convenience
       hits: this.cacheHits + this.ttlCacheHits,
       misses: this.cacheMisses + this.ttlCacheMisses,
-      hitRate: (totalMainRequests + totalTtlRequests) > 0 ? 
-        (this.cacheHits + this.ttlCacheHits) / (totalMainRequests + totalTtlRequests) : 0,
-      size: this.cache.size + this.ttlCache.size
+      hitRate:
+        totalMainRequests + totalTtlRequests > 0
+          ? (this.cacheHits + this.ttlCacheHits) /
+            (totalMainRequests + totalTtlRequests)
+          : 0,
+      size: this.cache.size + this.ttlCache.size,
     };
   }
 
@@ -142,7 +146,12 @@ export class CacheService {
   }
 
   // API response caching
-  cacheApiResponse(endpoint: string, params: Record<string, any>, response: any, ttl = 300000): void {
+  cacheApiResponse(
+    endpoint: string,
+    params: Record<string, any>,
+    response: any,
+    ttl = 300000
+  ): void {
     const key = `api:${endpoint}:${JSON.stringify(params)}`;
     this.set(key, response, ttl);
   }
@@ -154,12 +163,16 @@ export class CacheService {
 
   // Database query caching
   cacheQuery(query: string, params: any[], result: any, ttl = 600000): void {
-    const key = `query:${Buffer.from(query + JSON.stringify(params)).toString('base64')}`;
+    const key = `query:${Buffer.from(query + JSON.stringify(params)).toString(
+      "base64"
+    )}`;
     this.set(key, result, ttl);
   }
 
   getCachedQuery(query: string, params: any[]): any {
-    const key = `query:${Buffer.from(query + JSON.stringify(params)).toString('base64')}`;
+    const key = `query:${Buffer.from(query + JSON.stringify(params)).toString(
+      "base64"
+    )}`;
     return this.get(key);
   }
 }
@@ -170,6 +183,10 @@ export const cacheService = new CacheService();
 // Cache middleware for Express
 export function cacheMiddleware(ttl = 300000) {
   return (req: Request, res: Response, next: NextFunction) => {
+    if (req.method !== "GET") {
+      return next();
+    }
+
     const key = `${req.method}:${req.originalUrl}:${JSON.stringify(req.query)}`;
     const cached = cacheService.get(key);
 
@@ -179,7 +196,7 @@ export function cacheMiddleware(ttl = 300000) {
 
     // Override res.json to cache the response
     const originalJson = res.json.bind(res);
-    res.json = function(data: any) {
+    res.json = function (data: any) {
       cacheService.set(key, data, ttl);
       return originalJson(data);
     };

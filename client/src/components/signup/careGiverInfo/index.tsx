@@ -36,6 +36,8 @@ export default function CaregiverInfoStep() {
 
   const needsPhone = data.verificationMethod === "email";
   const needsEmail = data.verificationMethod === "phone";
+  const showPhoneInput = needsPhone || (!needsPhone && !needsEmail);
+  const showEmailInput = needsEmail || (!needsPhone && !needsEmail);
 
   const [formData, setFormData] = useState({
     firstName:
@@ -68,7 +70,7 @@ export default function CaregiverInfoStep() {
 
   const handleInputChange = (
     field: "firstName" | "lastName" | "phone" | "email",
-    value: string,
+    value: string
   ) => {
     if (field === "phone") {
       const formatted = formatPhone(value);
@@ -214,7 +216,7 @@ export default function CaregiverInfoStep() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {showPhoneInput && (
             <div>
               <Label htmlFor="caregiver-phone">
                 {needsPhone ? "Phone number *" : "Phone number"}
@@ -229,7 +231,9 @@ export default function CaregiverInfoStep() {
                 data-testid="input-caregiver-phone"
               />
             </div>
+          )}
 
+          {showEmailInput && (
             <div>
               <Label htmlFor="caregiver-email">
                 {needsEmail ? "Email address *" : "Email address"}
@@ -243,7 +247,7 @@ export default function CaregiverInfoStep() {
                 data-testid="input-caregiver-email"
               />
             </div>
-          </div>
+          )}
 
           <div className="flex gap-3 pt-2">
             <Button variant="outline" onClick={prevStep} disabled={isLoading}>

@@ -5,6 +5,19 @@ import { sendEmail, sendTemplateEmail } from "../services/emailService";
 import { randomBytes } from "crypto";
 import { storage } from "../storage";
 import { TwilioService } from "../services/twilioService";
+import { Resend } from "resend";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+if (!process.env.FROM_EMAIL) {
+  throw new Error("Missing FROM_EMAIL");
+}
+if (!process.env.RESEND_API_KEY) {
+  throw new Error("Missing RESEND_API_KEY");
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Validation schemas
 const registerStartSchema = z
@@ -88,42 +101,45 @@ export function registerAuthRoutes(app: Express) {
       // Generate a 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const key = contactKey(email, phone);
-      console.log(`otp`, otp);
+
+      // Store OTP
       pendingOtps.set(key, {
         code: otp,
         expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
       });
 
+      // Log after storing (ensures it logs every time)
       console.log(
-        `Your verification code is ${otp}. It expires in 10 minutes.`,
+        `OTP generated for ${email || phone}: ${otp} (expires in 10 minutes)`
       );
 
-      // Send via chosen channel (uncomment when sms/email service is enabled)
-      // if (email) {
-      //   const sent = await sendEmail({
-      //     to: email,
-      //     from: process.env.FROM_EMAIL || "hello@eldervoice.com",
-      //     subject: "Your ElderVoice verification code",
-      //     text: `Your verification code is ${otp}. It expires in 10 minutes.`,
-      //   });
-      //   if (!sent) {
-      //     return res.status(500).json({ message: "Failed to send email" });
-      //   }
-      // } else if (phone) {
-      //   const twilioSvc = new TwilioService();
-      //   try {
-      //     await twilioSvc.sendSMS(
-      //       phone,
-      //       `Your ElderVoice verification code is ${otp}. It expires in 10 minutes.`,
-      //     );
-      //   } catch (e) {
-      //     console.error("Failed to send SMS:", e);
-      //     return res.status(500).json({ message: "Failed to send SMS" });
-      //   }
-      // }
+      // Send via chosen channel
+      if (email) {
+        try {
+          await resend.emails.send({
+            from: process.env.FROM_EMAIL!,
+            to: email,
+            subject: "Your ElderVoice verification code",
+            html: `Your verification code is ${otp}. It expires in 10 minutes.`,
+          });
+        } catch (e) {
+          return res.status(500).json({ message: "Failed to send email" });
+        }
+      } else if (phone) {
+        const twilioSvc = new TwilioService();
+        try {
+          await twilioSvc.sendSMS(
+            phone,
+            `Your ElderVoice verification code is ${otp}. It expires in 10 minutes.`
+          );
+        } catch (e) {
+          console.error("Failed to send SMS:", e);
+          return res.status(500).json({ message: "Failed to send SMS" });
+        }
+      }
 
       return res.json({
-        message: `Verification code sent ${JSON.stringify(otp)}`,
+        message: `Verification code sent`,
       });
     } catch (error) {
       console.error("Register start error:", error);
@@ -214,8 +230,8 @@ export function registerAuthRoutes(app: Express) {
       const signInPayload = email
         ? { email: email.toLowerCase(), password }
         : normalizedPhone
-          ? { phone: normalizedPhone, password }
-          : null;
+        ? { phone: normalizedPhone, password }
+        : null;
 
       if (!signInPayload) {
         return res
@@ -347,8 +363,9 @@ export function registerAuthRoutes(app: Express) {
       const { token } = result.data;
 
       // Verify token with Supabase
-      const { data: authData, error: authError } =
-        await supabase.auth.getUser(token);
+      const { data: authData, error: authError } = await supabase.auth.getUser(
+        token
+      );
 
       if (authError || !authData.user) {
         return res.status(401).json({
@@ -501,7 +518,7 @@ export function registerAuthRoutes(app: Express) {
       const userWithToken = authUsers.users.find(
         (user) =>
           user.user_metadata?.reset_token === token &&
-          user.user_metadata?.reset_token_expires > Date.now(),
+          user.user_metadata?.reset_token_expires > Date.now()
       );
 
       if (!userWithToken) {
@@ -520,7 +537,7 @@ export function registerAuthRoutes(app: Express) {
             reset_token: null,
             reset_token_expires: null,
           },
-        },
+        }
       );
 
       if (error) {

@@ -1,6 +1,9 @@
+import dotenv from "dotenv";
 import Stripe from "stripe";
 import { storage } from "../storage";
 import type { InsertSubscription, InsertInvoice } from "../../shared/schema";
+
+dotenv.config();
 
 if (!process.env.STRIPE_SECRET) {
   throw new Error("Missing required Stripe secret: STRIPE_SECRET");
@@ -75,7 +78,7 @@ export class StripeSyncService {
     updates: {
       newPriceId?: string;
       metadata?: Record<string, string>;
-    },
+    }
   ): Promise<Stripe.Subscription> {
     try {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
@@ -103,7 +106,7 @@ export class StripeSyncService {
     } catch (error) {
       console.error(
         `Error updating Stripe subscription ${subscriptionId}:`,
-        error,
+        error
       );
       throw error;
     }
@@ -114,7 +117,7 @@ export class StripeSyncService {
    */
   async cancelStripeSubscription(
     subscriptionId: string,
-    atPeriodEnd: boolean = true,
+    atPeriodEnd: boolean = true
   ): Promise<Stripe.Subscription> {
     try {
       return await stripe.subscriptions.update(subscriptionId, {
@@ -123,7 +126,7 @@ export class StripeSyncService {
     } catch (error) {
       console.error(
         `Error canceling Stripe subscription ${subscriptionId}:`,
-        error,
+        error
       );
       throw error;
     }
@@ -135,7 +138,7 @@ export class StripeSyncService {
   async archiveProductAndPrices(
     productId: string,
     monthlyPriceId?: string | null,
-    annualPriceId?: string | null,
+    annualPriceId?: string | null
   ): Promise<void> {
     // Archive product
     await stripe.products.update(productId, { active: false });
@@ -174,7 +177,7 @@ export class StripeSyncService {
     const annualAmountBeforeDiscount = monthlyAmount * 12;
     const annualDiscountPercent = planData.annualDiscount || 0;
     const annualAmount = Math.round(
-      annualAmountBeforeDiscount * (1 - annualDiscountPercent / 100),
+      annualAmountBeforeDiscount * (1 - annualDiscountPercent / 100)
     );
 
     // Create Monthly Price
@@ -211,7 +214,7 @@ export class StripeSyncService {
       name: string;
       description: string;
       active: boolean;
-    }>,
+    }>
   ): Promise<void> {
     if (Object.keys(updates).length === 0) return;
 
@@ -225,13 +228,13 @@ export class StripeSyncService {
   async archiveOldAndCreateNewPrices(
     productId: string,
     basePrice: number,
-    annualDiscount: number = 0,
+    annualDiscount: number = 0
   ): Promise<{ monthlyPriceId: string; annualPriceId: string }> {
     // Calculate new prices
     const monthlyAmount = basePrice;
     const annualAmountBeforeDiscount = monthlyAmount * 12;
     const annualAmount = Math.round(
-      annualAmountBeforeDiscount * (1 - annualDiscount / 100),
+      annualAmountBeforeDiscount * (1 - annualDiscount / 100)
     );
 
     // Create new prices
@@ -273,7 +276,7 @@ export class StripeSyncService {
    */
   async updateProductMetadata(
     productId: string,
-    metadata: Record<string, string>,
+    metadata: Record<string, string>
   ): Promise<void> {
     await stripe.products.update(productId, { metadata });
   }
@@ -339,7 +342,7 @@ export class StripeSyncService {
     if (duration === "repeating") {
       if (!durationInMonths) {
         throw new Error(
-          "durationInMonths is required for repeating duration coupons",
+          "durationInMonths is required for repeating duration coupons"
         );
       }
       couponParams.duration_in_months = durationInMonths;
@@ -386,7 +389,7 @@ export class StripeSyncService {
     updates: {
       name?: string | null;
       metadata?: Record<string, string> | null;
-    },
+    }
   ): Promise<Stripe.Coupon> {
     const params: Stripe.CouponUpdateParams = {};
 
@@ -413,7 +416,7 @@ export class StripeSyncService {
     updates: {
       active?: boolean;
       metadata?: Record<string, string> | null;
-    },
+    }
   ): Promise<Stripe.PromotionCode> {
     const params: Stripe.PromotionCodeUpdateParams = {};
 
@@ -454,7 +457,7 @@ export class StripeSyncService {
   }
 
   async retrievePromotionCode(
-    stripePromotionCodeId: string,
+    stripePromotionCodeId: string
   ): Promise<Stripe.PromotionCode | null> {
     try {
       return await stripe.promotionCodes.retrieve(stripePromotionCodeId);
@@ -476,25 +479,25 @@ export class StripeSyncService {
       switch (event.type) {
         case "customer.subscription.created":
           await this.handleSubscriptionCreated(
-            event.data.object as Stripe.Subscription,
+            event.data.object as Stripe.Subscription
           );
           break;
 
         case "customer.subscription.updated":
           await this.handleSubscriptionUpdated(
-            event.data.object as Stripe.Subscription,
+            event.data.object as Stripe.Subscription
           );
           break;
 
         case "customer.subscription.deleted":
           await this.handleSubscriptionDeleted(
-            event.data.object as Stripe.Subscription,
+            event.data.object as Stripe.Subscription
           );
           break;
 
         case "invoice.payment_succeeded":
           await this.handlePaymentSucceeded(
-            event.data.object as Stripe.Invoice,
+            event.data.object as Stripe.Invoice
           );
           break;
 
@@ -512,7 +515,7 @@ export class StripeSyncService {
   }
 
   private async handleSubscriptionCreated(
-    subscription: Stripe.Subscription,
+    subscription: Stripe.Subscription
   ): Promise<void> {
     console.log("Processing subscription created:", subscription.id);
 
@@ -529,7 +532,7 @@ export class StripeSyncService {
 
     if (!servicePlan) {
       console.error(
-        `No service plan found for price ID ${priceId} in subscription ${subscription.id}`,
+        `No service plan found for price ID ${priceId} in subscription ${subscription.id}`
       );
       return;
     }
@@ -565,10 +568,10 @@ export class StripeSyncService {
         ? new Date(subscription.trial_end * 1000)
         : null,
       currentPeriodStart: new Date(
-        (subscription as any).current_period_start * 1000,
+        (subscription as any).current_period_start * 1000
       ),
       currentPeriodEnd: new Date(
-        (subscription as any).current_period_end * 1000,
+        (subscription as any).current_period_end * 1000
       ),
       canceledAt: subscription.canceled_at
         ? new Date(subscription.canceled_at * 1000)
@@ -585,7 +588,7 @@ export class StripeSyncService {
       let existing = await storage.getSubscriptionByStripeId(subscription.id);
       if (existing) {
         console.log(
-          `Subscription ${subscription.id} already exists, updating...`,
+          `Subscription ${subscription.id} already exists, updating...`
         );
         await storage.updateSubscription(existing.id, subscriptionData);
       } else {
@@ -594,7 +597,7 @@ export class StripeSyncService {
       }
 
       console.log(
-        `Successfully processed subscription ${subscription.id} for plan ${servicePlan.name}`,
+        `Successfully processed subscription ${subscription.id} for plan ${servicePlan.name}`
       );
     } catch (error) {
       console.error(`Failed to save subscription ${subscription.id}:`, error);
@@ -603,14 +606,14 @@ export class StripeSyncService {
   }
 
   private async handleSubscriptionUpdated(
-    subscription: Stripe.Subscription,
+    subscription: Stripe.Subscription
   ): Promise<void> {
     console.log("Processing subscription updated:", subscription.id);
 
     const existing = await storage.getSubscriptionByStripeId(subscription.id);
     if (!existing) {
       console.warn(
-        `Subscription not found locally for Stripe ID: ${subscription.id}, creating it...`,
+        `Subscription not found locally for Stripe ID: ${subscription.id}, creating it...`
       );
       // If subscription doesn't exist, create it
       await this.handleSubscriptionCreated(subscription);
@@ -623,16 +626,17 @@ export class StripeSyncService {
 
     // If price changed, find the new plan
     if (currentPriceId && currentPriceId !== existing.stripePriceId) {
-      const newServicePlan =
-        await storage.findServicePlanByPriceId(currentPriceId);
+      const newServicePlan = await storage.findServicePlanByPriceId(
+        currentPriceId
+      );
       if (newServicePlan) {
         planId = newServicePlan.id;
         console.log(
-          `Plan changed from ${existing.planId} to ${planId} for subscription ${subscription.id}`,
+          `Plan changed from ${existing.planId} to ${planId} for subscription ${subscription.id}`
         );
       } else {
         console.warn(
-          `Could not find service plan for new price ID ${currentPriceId}`,
+          `Could not find service plan for new price ID ${currentPriceId}`
         );
       }
     }
@@ -658,10 +662,10 @@ export class StripeSyncService {
         ? new Date(subscription.trial_end * 1000)
         : existing.trialEnd,
       currentPeriodStart: new Date(
-        (subscription as any).current_period_start * 1000,
+        (subscription as any).current_period_start * 1000
       ),
       currentPeriodEnd: new Date(
-        (subscription as any).current_period_end * 1000,
+        (subscription as any).current_period_end * 1000
       ),
       canceledAt: subscription.canceled_at
         ? new Date(subscription.canceled_at * 1000)
@@ -683,14 +687,14 @@ export class StripeSyncService {
   }
 
   private async handleSubscriptionDeleted(
-    subscription: Stripe.Subscription,
+    subscription: Stripe.Subscription
   ): Promise<void> {
     console.log("Processing subscription deleted:", subscription.id);
 
     const existing = await storage.getSubscriptionByStripeId(subscription.id);
     if (!existing) {
       console.warn(
-        `Subscription not found locally for Stripe ID: ${subscription.id}`,
+        `Subscription not found locally for Stripe ID: ${subscription.id}`
       );
       return;
     }
@@ -725,36 +729,39 @@ export class StripeSyncService {
     }
 
     // CRITICAL FIX: Get the local subscription record first
-    let localSubscription =
-      await storage.getSubscriptionByStripeId(stripeSubscriptionId);
+    let localSubscription = await storage.getSubscriptionByStripeId(
+      stripeSubscriptionId
+    );
 
     // If subscription doesn't exist locally yet, we need to handle this gracefully
     if (!localSubscription) {
       console.warn(
         `Local subscription not found for Stripe ID: ${stripeSubscriptionId}. ` +
-          `This might happen if payment succeeded before subscription.created event.`,
+          `This might happen if payment succeeded before subscription.created event.`
       );
 
       // Try to fetch the subscription from Stripe and create it locally
       try {
-        const stripeSubscription =
-          await stripe.subscriptions.retrieve(stripeSubscriptionId);
+        const stripeSubscription = await stripe.subscriptions.retrieve(
+          stripeSubscriptionId
+        );
         await this.handleSubscriptionCreated(stripeSubscription);
 
         // Now try to get the local subscription again
-        localSubscription =
-          await storage.getSubscriptionByStripeId(stripeSubscriptionId);
+        localSubscription = await storage.getSubscriptionByStripeId(
+          stripeSubscriptionId
+        );
 
         if (!localSubscription) {
           console.error(
-            `Failed to create local subscription for ${stripeSubscriptionId}`,
+            `Failed to create local subscription for ${stripeSubscriptionId}`
           );
           return;
         }
       } catch (error) {
         console.error(
           `Failed to retrieve subscription ${stripeSubscriptionId} from Stripe:`,
-          error,
+          error
         );
         return;
       }
@@ -820,12 +827,13 @@ export class StripeSyncService {
         });
       } else {
         // Get the local subscription record
-        const localSubscription =
-          await storage.getSubscriptionByStripeId(stripeSubscriptionId);
+        const localSubscription = await storage.getSubscriptionByStripeId(
+          stripeSubscriptionId
+        );
 
         if (!localSubscription) {
           console.warn(
-            `No local subscription found for failed invoice subscription: ${stripeSubscriptionId}`,
+            `No local subscription found for failed invoice subscription: ${stripeSubscriptionId}`
           );
           return;
         }
@@ -849,7 +857,7 @@ export class StripeSyncService {
     } catch (error) {
       console.error(
         `Failed to handle payment failed for invoice ${invoice.id}:`,
-        error,
+        error
       );
       throw error;
     }

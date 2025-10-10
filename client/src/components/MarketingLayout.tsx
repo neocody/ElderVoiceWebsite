@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import logoPath from "@assets/Elderly Voice Logo-small_1759010432968.png";
+import { APP_DOMAIN } from "@/config/domains";
 
 interface MarketingLayoutProps {
   children: React.ReactNode;
@@ -61,7 +62,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
 
             {/* CTA Buttons */}
             <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-              <Link href="/auth/signin">
+              <a href={`${APP_DOMAIN}/auth/signin`}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -69,15 +70,15 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
                 >
                   Sign In
                 </Button>
-              </Link>
-              <Link href="/getstarted">
+              </a>
+              <a href={`${APP_DOMAIN}/getstarted`}>
                 <Button
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-105 shadow-md"
                   size="sm"
                 >
                   Get Started
                 </Button>
-              </Link>
+              </a>
             </div>
 
             {/* Mobile menu button */}
@@ -111,7 +112,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
                   </Link>
                 ))}
                 <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
-                  <Link href="/auth/signin">
+                  <a href={`${APP_DOMAIN}/auth/signin`}>
                     <Button
                       variant="outline"
                       size="sm"
@@ -120,8 +121,8 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
                     >
                       Sign In
                     </Button>
-                  </Link>
-                  <Link href="/getstarted">
+                  </a>
+                  <a href={`${APP_DOMAIN}/getstarted`}>
                     <Button
                       className="bg-blue-600 hover:bg-blue-700 w-full"
                       size="sm"
@@ -129,7 +130,7 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
                     >
                       Get Started
                     </Button>
-                  </Link>
+                  </a>
                 </div>
               </nav>
             </div>

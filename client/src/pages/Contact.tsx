@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { APP_DOMAIN } from "@/config/domains";
 import { 
   Select,
   SelectContent,
@@ -139,7 +140,7 @@ export default function Contact() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg"
-              onClick={() => window.location.href = '/getstarted'}
+              onClick={() => window.location.href = `${APP_DOMAIN}/getstarted`}
               className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 h-auto"
               data-testid="button-start-trial"
             >

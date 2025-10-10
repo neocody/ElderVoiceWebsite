@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import MarketingLayout from "@/components/MarketingLayout";
 import { Link } from "wouter";
+import { APP_DOMAIN } from "@/config/domains";
 import { 
   Heart, 
   Phone, 
@@ -156,7 +157,7 @@ export default function Individuals() {
               during your precious time together.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Link href="/getstarted">
+              <a href={`${APP_DOMAIN}/getstarted`}>
                 <Button 
                   size="lg"
                   className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 h-auto"
@@ -165,7 +166,7 @@ export default function Individuals() {
                   Start Caring Today
                   <ArrowRight className="ml-2" size={20} />
                 </Button>
-              </Link>
+              </a>
               <Button 
                 size="lg"
                 variant="outline"
@@ -392,7 +393,7 @@ export default function Individuals() {
                   <span className="text-sm">Priority support & customization</span>
                 </div>
                 <div className="pt-6">
-                  <Link href="/getstarted" className="block">
+                  <a href={`${APP_DOMAIN}/getstarted`} className="block">
                     <Button 
                       className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-lg py-6" 
                       data-testid="button-start-trial"
@@ -400,7 +401,7 @@ export default function Individuals() {
                       Start 7-Day Free Trial
                       <ArrowRight className="ml-2" size={20} />
                     </Button>
-                  </Link>
+                  </a>
                   <p className="text-xs text-gray-500 text-center mt-3">
                     No credit card required • Cancel anytime
                   </p>
@@ -490,7 +491,7 @@ export default function Individuals() {
             Give your loved one daily companionship and give yourself the gift of peace of mind.
           </p>
           
-          <Link href="/getstarted" data-testid="link-begin-trial">
+          <a href={`${APP_DOMAIN}/getstarted`} data-testid="link-begin-trial">
             <Button 
               size="lg"
               variant="secondary"
@@ -500,7 +501,7 @@ export default function Individuals() {
               Begin Your Free Trial
               <ArrowRight className="ml-2" size={20} />
             </Button>
-          </Link>
+          </a>
 
           <p className="text-blue-200 text-sm mt-6">
             Setup in 5 minutes • First call tomorrow • Cancel anytime

@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 import MarketingLayout from "@/components/MarketingLayout";
 import { AudioChip } from "@/components/AudioChip";
+import { APP_DOMAIN } from "@/config/domains";
 import {
   Heart,
   Phone,
@@ -112,7 +113,7 @@ export default function Landing() {
               peace of mind.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Link href="/getstarted">
+              <a href={`${APP_DOMAIN}/getstarted`}>
                 <Button
                   size="lg"
                   className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 h-auto"
@@ -121,7 +122,7 @@ export default function Landing() {
                   Start 7-Day Trial
                   <ArrowRight className="ml-2" size={20} />
                 </Button>
-              </Link>
+              </a>
               <Link href="/individuals">
                 <Button
                   size="lg"
@@ -533,7 +534,7 @@ export default function Landing() {
             companion just a phone call away.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/getstarted">
+            <a href={`${APP_DOMAIN}/getstarted`}>
               <Button
                 size="lg"
                 className="bg-blue-600 text-white hover:bg-blue-700 text-lg px-8 py-4 h-auto"
@@ -542,7 +543,7 @@ export default function Landing() {
                 Get Started
                 <ArrowRight className="ml-2" size={20} />
               </Button>
-            </Link>
+            </a>
             <Link href="/individuals">
               <Button
                 size="lg"

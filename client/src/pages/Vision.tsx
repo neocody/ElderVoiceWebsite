@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import MarketingLayout from "@/components/MarketingLayout";
 import { Link } from "wouter";
+import { APP_DOMAIN } from "@/config/domains";
 import { 
   Heart, 
   Users, 
@@ -77,7 +78,7 @@ export default function Vision() {
             We're building a future where every senior has access to daily companionship through 
             caring, intelligent AI-powered phone calls that understand, remember, and genuinely engage.
           </p>
-          <Link href="/getstarted">
+          <a href={`${APP_DOMAIN}/getstarted`}>
             <Button 
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 h-auto"
@@ -86,7 +87,7 @@ export default function Vision() {
               Join Our Mission
               <ArrowRight className="ml-2" size={20} />
             </Button>
-          </Link>
+          </a>
         </div>
       </section>
 
@@ -280,7 +281,7 @@ export default function Vision() {
             Become part of a movement that's transforming senior care through compassionate technology. 
             Together, we can ensure no senior feels alone.
           </p>
-          <Link href="/getstarted">
+          <a href={`${APP_DOMAIN}/getstarted`}>
             <Button 
               size="lg"
               variant="secondary"
@@ -290,7 +291,7 @@ export default function Vision() {
               Get Started Today
               <ArrowRight className="ml-2" size={20} />
             </Button>
-          </Link>
+          </a>
         </div>
       </section>
     </MarketingLayout>

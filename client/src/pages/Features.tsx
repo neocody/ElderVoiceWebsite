@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import MarketingLayout from "@/components/MarketingLayout";
+import { APP_DOMAIN } from "@/config/domains";
 import { 
   Phone, 
   MessageCircle, 
@@ -136,7 +137,7 @@ export default function Features() {
           </p>
           <Button 
             size="lg"
-            onClick={() => window.location.href = '/getstarted'}
+            onClick={() => window.location.href = `${APP_DOMAIN}/getstarted`}
             className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 h-auto"
           >
             Start Free Trial

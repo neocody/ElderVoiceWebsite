@@ -117,7 +117,7 @@ function GetStartedContent() {
             )}
 
             {/* Reset button for testing */}
-            {process.env.NODE_ENV === "development" && (
+            {import.meta.env.MODE === "development" && (
               <Button
                 variant="outline"
                 size="sm"

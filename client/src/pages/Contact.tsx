@@ -353,7 +353,7 @@ export default function Contact() {
           <Button 
             size="lg"
             variant="secondary"
-            onClick={() => window.location.href = '/getstarted'}
+            onClick={() => window.location.href = `${APP_DOMAIN}/getstarted`}
             className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4 h-auto"
             data-testid="button-cta-start-trial"
           >

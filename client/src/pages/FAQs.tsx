@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import MarketingLayout from "@/components/MarketingLayout";
+import { APP_DOMAIN } from "@/config/domains";
 import { 
   HelpCircle, 
   Phone, 
@@ -309,7 +310,7 @@ export default function FAQs() {
             </p>
             <Button 
               size="lg"
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => window.location.href = `${APP_DOMAIN}/auth/signin`}
               className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4 h-auto"
             >
               Start Free Trial

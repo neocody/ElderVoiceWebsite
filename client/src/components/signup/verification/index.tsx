@@ -288,7 +288,7 @@ export default function VerificationStep() {
           isLoading={isLoading}
           selectedMethod={selectedMethod}
           onSkip={skipVerificationForTesting}
-          showSkip={process.env.NODE_ENV === "development"}
+          showSkip={import.meta.env.MODE === "development"}
         />
       )}
       <VerificationFooter />

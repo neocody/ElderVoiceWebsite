@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import logoPath from "@assets/Elderly Voice Logo-small_1759010432968.png";
 import { APP_DOMAIN } from "@/config/domains";
 
 interface MarketingLayoutProps {
@@ -34,12 +33,13 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/">
-              <div className="flex items-center cursor-pointer">
-                <img 
-                  src={logoPath} 
-                  alt="Elderly Voice" 
-                  className="h-8 w-auto sm:h-10 transition-all hover:scale-105"
+              <div className="flex items-center gap-2 cursor-pointer group">
+                <Heart 
+                  className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 fill-blue-600 transition-all group-hover:scale-110" 
                 />
+                <span className="text-xl sm:text-2xl font-bold text-gray-900 transition-all group-hover:text-blue-600">
+                  Elder Voice
+                </span>
               </div>
             </Link>
 
@@ -147,12 +147,13 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center space-x-3 mb-4">
-                <img 
-                  src={logoPath} 
-                  alt="Elderly Voice" 
-                  className="h-6 w-auto"
+              <div className="flex items-center gap-2 mb-4">
+                <Heart 
+                  className="h-6 w-6 text-blue-500 fill-blue-500" 
                 />
+                <span className="text-lg font-bold text-white">
+                  Elder Voice
+                </span>
               </div>
               <p className="text-gray-300 text-sm leading-relaxed max-w-md">
                 Providing compassionate AI-powered companionship for seniors

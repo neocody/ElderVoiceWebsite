@@ -3,6 +3,8 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
+  "cleanUrls": false,
+  "trailingSlash": false,
   "rewrites": [
     {
       "source": "/(.*)",

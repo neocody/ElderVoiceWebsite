@@ -5,10 +5,14 @@
     "framework": "vite",
     "cleanUrls": false,
     "trailingSlash": false,
+ 
     "rewrites": [
       {
         "source": "/(.*)",
         "destination": "/index.html"
+      },
+      {
+        "routes": [{ "src": "/[^.]+", "dest": "/", "status": 200 }]
       }
     ]
   }

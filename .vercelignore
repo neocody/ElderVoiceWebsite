@@ -1,0 +1,6 @@
+server/
+dist/index.js
+*.log
+.env.local
+.env.*.local
+
